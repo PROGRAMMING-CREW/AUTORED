@@ -20,7 +20,7 @@ npm run dev
 ================== INSTALACION DE TALWIND ==================    
 comando que instala talwind y dependencias
 npm install tailwindcss @tailwindcss/vite
-
+===================YA NO INSTALAR===========================
 
 =================Comandos de GITHUB======================
 Cada vez que inicien el proyecto coloque este comando
