@@ -46,9 +46,30 @@
     @apply min-h-dvh font-sans text-ink-900 antialiased;
     margin: 0;
     background-color: var(--color-ink-50);
+    /* "Brasa y ceniza": una brasa que se enciende arriba a la derecha, rayos de calor
+       que abren en abanico, una chispa baja y humo grafito a la izquierda.
+       De arriba hacia abajo (la primera capa queda encima). El lado izquierdo, donde
+       va el texto, se mantiene calmado para conservar el contraste. */
     background-image:
-      radial-gradient(48rem 26rem at 100% -8%, color-mix(in srgb, var(--color-brand-200) 45%, transparent), transparent 70%),
-      radial-gradient(40rem 24rem at -8% 8%, var(--color-ink-100), transparent 70%);
+      /* 1. núcleo incandescente */
+      radial-gradient(20rem 14rem at 94% -3%, color-mix(in srgb, var(--color-brand-400) 40%, transparent), transparent 72%),
+      /* 2. rayos de calor desde la esquina */
+      conic-gradient(from 195deg at 100% 0%,
+        transparent 0deg,
+        color-mix(in srgb, var(--color-brand-300) 18%, transparent) 16deg,
+        transparent 34deg,
+        color-mix(in srgb, var(--color-brand-200) 20%, transparent) 52deg,
+        transparent 74deg,
+        color-mix(in srgb, var(--color-brand-300) 12%, transparent) 90deg,
+        transparent 110deg),
+      /* 3. halo de brasa */
+      radial-gradient(54rem 30rem at 100% -10%, color-mix(in srgb, var(--color-brand-300) 52%, transparent), transparent 72%),
+      /* 4. chispa baja a la derecha */
+      radial-gradient(34rem 26rem at 108% 72%, color-mix(in srgb, var(--color-brand-200) 55%, transparent), transparent 70%),
+      /* 5. humo grafito a la izquierda */
+      radial-gradient(44rem 28rem at -10% 10%, color-mix(in srgb, var(--color-ink-300) 38%, transparent), transparent 70%),
+      /* 6. ceniza que se calienta hacia el final de la página */
+      linear-gradient(180deg, var(--color-ink-50) 0%, var(--color-ink-100) 60%, color-mix(in srgb, var(--color-brand-100) 70%, var(--color-ink-100)) 100%);
     background-repeat: no-repeat;
   }
   body::before, body::after { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; }
@@ -145,15 +166,59 @@
   .price { @apply font-display text-2xl font-semibold tabular-nums text-ink-900; }
   .sku   { @apply font-mono text-xs tracking-wide text-ink-500; }
 
-  /* --- Tablas --- */
-  .table-wrap { @apply overflow-x-auto rounded-surface border border-ink-200 bg-white; }
+  /* --- Tablas (overscroll-x-contain: el scroll horizontal no arrastra la página) --- */
+  .table-wrap { @apply overflow-x-auto overscroll-x-contain rounded-surface border border-ink-200 bg-white; }
   .table { @apply w-full text-left text-sm; }
   .table th { @apply bg-ink-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-500; }
   .table td { @apply border-t border-ink-100 px-4 py-3 text-ink-800; }
 
+  /* --- Contenedor con scroll propio (listas, menús, modales) --- */
+  .scroll-area { @apply overflow-auto overscroll-contain; }
+
   /* --- Varios --- */
   .link { @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-4; }
   .skeleton { @apply animate-pulse rounded-control bg-ink-200; }
+
+  /* ---------- Efectos de botón (prop `effect`) ---------- */
+
+  /* fill — el color sube desde la izquierda (ideal en secondary) */
+  .fx-fill { @apply relative isolate overflow-hidden; }
+  .fx-fill::before {
+    content: ''; position: absolute; inset: 0; z-index: -1;
+    background: var(--color-brand-600);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 260ms var(--ease-out);
+  }
+
+  /* shine — destello diagonal que cruza el botón (ideal en primary) */
+  .fx-shine { @apply relative isolate overflow-hidden; }
+  .fx-shine::after {
+    content: ''; position: absolute; inset: 0 auto 0 0; width: 45%; z-index: 1;
+    background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.38), transparent);
+    transform: translateX(-130%) skewX(-18deg);
+    pointer-events: none;
+  }
+
+  /* underline — línea que entra por la izquierda y sale por la derecha (ideal en ghost) */
+  .fx-underline { @apply relative; }
+  .fx-underline::after {
+    content: ''; position: absolute; left: 1rem; right: 1rem; bottom: 0.55rem; height: 2px;
+    background: currentColor; border-radius: 2px;
+    transform: scaleX(0); transform-origin: right;
+    transition: transform 240ms var(--ease-out);
+  }
+
+  /* 3d — botón con "grosor" que se hunde al presionar */
+  .fx-3d { box-shadow: 0 4px 0 var(--color-brand-800); }
+  .btn.fx-3d:active { scale: 1; translate: 0 3px; box-shadow: 0 1px 0 var(--color-brand-800); transition-duration: 60ms; }
+
+  /* ring — un anillo se expande una sola vez al pasar el cursor (CTA principal) */
+  .fx-ring { @apply relative; }
+  .fx-ring::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 0 2px var(--color-brand-400);
+    opacity: 0;
+  }
 
   /* Hover solo en dispositivos con puntero real (en táctil se queda "pegado") */
   @media (hover: hover) and (pointer: fine) {
@@ -167,16 +232,44 @@
     .table tbody tr:hover td { @apply bg-ink-50; }
     .link:hover { @apply decoration-brand-600; }
     .chip:hover { @apply border-ink-300 bg-ink-50; }
+
+    /* Efectos (van después para ganar a los hover base) */
+    .fx-fill:hover { color: #fff; border-color: var(--color-brand-600); background-color: #fff; }
+    .fx-fill:hover::before { transform: scaleX(1); }
+
+    .fx-shine:hover::after { transform: translateX(330%) skewX(-18deg); transition: transform 650ms var(--ease-out); }
+
+    .fx-underline:hover::after { transform: scaleX(1); transform-origin: left; }
+
+    .btn.fx-3d:hover { translate: 0 -1px; box-shadow: 0 5px 0 var(--color-brand-800); }
+
+    .fx-ring:hover::after { animation: autored-ring 600ms var(--ease-out); }
   }
+
+  /* Teclado: mismo feedback de fill sin necesitar hover */
+  .fx-fill:focus-visible { color: #fff; }
+  .fx-fill:focus-visible::before { transform: scaleX(1); }
 }
 
 @layer components { .btn-primary:active { @apply translate-y-0; } }
+
+@keyframes autored-ring {
+  from { opacity: 0.7; transform: scale(1); }
+  to   { opacity: 0;   transform: scale(1.18, 1.45); }
+}
 
 /* Movimiento reducido: se quita el desplazamiento, se conserva el fundido */
 @media (prefers-reduced-motion: reduce) {
   .btn, .card-interactive { transform: none !important; }
   .reveal { transform: none; transition-duration: 200ms; }
-  .animate-rise { animation-name: fade; }
+  .animate-rise { animation-name: autored-fade; }
+
+  .fx-fill::before { transform: scaleX(1); opacity: 0; transition: opacity 200ms ease; }
+  .fx-fill:hover::before, .fx-fill:focus-visible::before { opacity: 1; }
+  .fx-shine:hover::after, .fx-ring:hover::after { animation: none; transition: none; }
+  .fx-underline::after { transform: scaleX(1); opacity: 0; transition: opacity 200ms ease; }
+  .fx-underline:hover::after { opacity: 1; }
+  .btn.fx-3d:active, .btn.fx-3d:hover { translate: none; }
 }
 
 /* Quita el ancho máximo y el relleno que trae la plantilla de Vite */

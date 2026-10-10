@@ -1,13 +1,6 @@
+import { RouterProvider } from "react-router/dom";
+import { router } from "./router.jsx";
 
-import './App.css'
-import Index from './Index'
-
-function App() {
-  return (
-    <div>
-      <Index />
-    </div>
-  )
+export default function App() {
+  return <RouterProvider router={router} />;
 }
-
-export default App

@@ -18,18 +18,22 @@ export function Spinner({ className = '' }) {
   );
 }
 
-/* ---------- Button ---------- */
+/* ---------- Button ----------
+   effect (opcional): 'fill' | 'shine' | 'underline' | '3d' | 'ring'
+   Recomendado: fill→secondary, shine→primary, underline→ghost, 3d→primary, ring→CTA.
+   No combinar shine/underline/ring entre sí (todos usan ::after). */
 const buttonVariants = { primary: 'btn-primary', secondary: 'btn-secondary', ghost: 'btn-ghost', danger: 'btn-danger' };
 const buttonSizes = { sm: 'btn-sm', md: '', lg: 'btn-lg' };
+const buttonEffects = { fill: 'fx-fill', shine: 'fx-shine', underline: 'fx-underline', '3d': 'fx-3d', ring: 'fx-ring' };
 
 export function Button({
-  variant = 'primary', size = 'md', loading = false, arrow = false, type = 'button',
+  variant = 'primary', size = 'md', effect, loading = false, arrow = false, type = 'button',
   disabled, className, children, ...props
 }) {
   return (
     <button
       type={type}
-      className={cx('btn', buttonVariants[variant], buttonSizes[size], className)}
+      className={cx('btn', buttonVariants[variant], buttonSizes[size], effect && buttonEffects[effect], className)}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       {...props}
@@ -118,5 +122,8 @@ export function Reveal({ as: Tag = 'div', delay = 0, className, style, children,
        <p className="price">$849.00</p>
        <Button size="sm">Agregar</Button>
      </Card>
+
+     <Button effect="shine" arrow>Buscar refacciones</Button>
+     <Button variant="secondary" effect="fill">Ver catálogo</Button>
    </main>
    ============================================================ */
