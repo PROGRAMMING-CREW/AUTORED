@@ -340,3 +340,202 @@
   .ax-cf-card, .ax-bar i, .ax-tl-dot, .ax-tl-item { transition-duration: 1ms; }
   .ax-track { scroll-behavior: auto; }
 }
+
+
+/* ==========================================================================
+   REGISTRO (axr-) — pegar al FINAL de Index.css.
+   Todo lo demás de la página de registro reutiliza las clases ax- existentes.
+   ========================================================================== */
+.axr-sr { position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---------- Rejilla del hero (formulario + credencial) ---------- */
+.ax-hero-grid.axr-grid { grid-template-areas: "head" "form" "scene"; gap: 2rem; align-items: start; }
+.axr-head { grid-area: head; }
+.axr-formcol { grid-area: form; }
+.ax-hero-grid.axr-grid .ax-scene { grid-area: scene; }
+@media (min-width: 1024px) {
+  .ax-hero-grid.axr-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 31rem); grid-template-areas: "head form" "scene form"; grid-template-rows: auto 1fr; gap: 1rem 3.5rem; }
+  .axr-head { padding-top: 1.5rem; }
+}
+.axr-form-card :focus-visible { outline-color: var(--ax-ember-d); }
+
+/* ---------- Tarjeta del formulario ---------- */
+.axr-form-card { position: relative; padding: clamp(1.25rem, 3vw, 2rem); border-radius: 1.75rem; background: var(--ax-cream); color: var(--ax-ink); border: 1px solid rgb(255 255 255 / 0.5); box-shadow: 0 50px 90px -40px rgb(0 0 0 / 0.85), 0 0 0 1px rgb(0 0 0 / 0.3), 0 30px 80px -50px rgb(239 75 67 / 0.7); animation: axr-rise 700ms var(--ax-out) 250ms both; }
+@keyframes axr-rise { from { opacity: 0; transform: translateY(24px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+
+.axr-panel { animation: axr-in-r 320ms var(--ax-out) both; }
+.axr-panel[data-dir="-1"] { animation-name: axr-in-l; }
+@keyframes axr-in-r { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@keyframes axr-in-l { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+.axr-form-t { font-family: var(--ax-display); font-weight: 800; font-size: clamp(1.6rem, 3vw, 2rem); letter-spacing: -0.03em; line-height: 1.1; outline: none; }
+.axr-form-s { margin: 0.35rem 0 1.25rem; color: var(--ax-ink2); line-height: 1.5; }
+.axr-form-s b { color: var(--ax-ink); overflow-wrap: anywhere; }
+
+.axr-alert { display: flex; gap: 0.5rem; align-items: flex-start; margin-bottom: 1rem; padding: 0.75rem 0.9rem; border-radius: 0.9rem; background: #fde4e2; border: 1px solid #e8a09b; color: #7f1d1d; font-weight: 600; font-size: 0.92rem; animation: axr-pop 260ms var(--ax-out) both; }
+@keyframes axr-pop { from { opacity: 0; transform: translateY(6px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+/* rol: control segmentado con indicador deslizante */
+.axr-roles { position: relative; display: grid; grid-template-columns: 1fr 1fr; min-width: 0; margin: 0 0 1rem; padding: 0.3rem; border: 0; border-radius: 1.2rem; background: #f1d9d6; }
+.axr-thumb { position: absolute; top: 0.3rem; bottom: 0.3rem; left: 0.3rem; width: calc(50% - 0.3rem); border-radius: 0.95rem; background: #fff; box-shadow: 0 0 0 1.5px var(--ax-rust), 0 10px 20px -12px rgb(155 17 30 / 0.6); transition: transform 340ms var(--ax-out); }
+.axr-roles[data-rol="usuario"] .axr-thumb { transform: translateX(100%); }
+.axr-role { position: relative; z-index: 1; display: block; cursor: pointer; }
+.axr-role .box { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "i t" "i d"; column-gap: 0.6rem; align-items: center; height: 100%; padding: 0.7rem 0.8rem; border-radius: 0.95rem; color: var(--ax-ink2); transition: color 200ms ease, transform 140ms var(--ax-out); }
+.axr-role .box svg { grid-area: i; color: var(--ax-ink2); transition: color 200ms ease; }
+.axr-role b { grid-area: t; font-family: var(--ax-display); font-weight: 700; font-size: 0.98rem; line-height: 1.15; }
+.axr-role small { grid-area: d; font-size: 0.76rem; line-height: 1.25; }
+.axr-role input:checked + .box { color: var(--ax-ink); }
+.axr-role input:checked + .box svg { color: var(--ax-rust); }
+.axr-role input:focus-visible + .box { outline: 2px solid var(--ax-ember-d); outline-offset: -2px; }
+.axr-role:active .box { transform: scale(0.97); }
+
+/* campo que se despliega (sin saltos de layout) */
+.axr-collapse { display: grid; grid-template-rows: 0fr; opacity: 0; visibility: hidden; transition: grid-template-rows 280ms var(--ax-out), opacity 200ms ease, visibility 0s linear 280ms; }
+.axr-collapse.is-open { grid-template-rows: 1fr; opacity: 1; visibility: visible; transition: grid-template-rows 280ms var(--ax-out), opacity 240ms ease 60ms, visibility 0s; }
+.axr-collapse > div { min-height: 0; overflow: hidden; padding: 4px; margin: -4px; } /* el margen negativo evita recortar el aro de foco */
+
+/* botón de Google */
+.axr-google { display: flex; align-items: center; justify-content: center; gap: 0.75rem; width: 100%; min-height: 3.1rem; padding: 0.7rem 1rem; border-radius: 99px; background: #fff; border: 1.5px solid #cdb4b1; color: var(--ax-ink); font: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 140ms var(--ax-out), border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease; }
+.axr-google:active:not(:disabled) { transform: scale(0.98); }
+.axr-google:disabled { cursor: default; opacity: 0.75; }
+.axr-g { width: 1.4rem; height: 1.4rem; flex: none; }
+@media (hover: hover) and (pointer: fine) { .axr-google:hover:not(:disabled) { border-color: var(--ax-rust); box-shadow: 0 10px 24px -14px rgb(155 17 30 / 0.7); transform: translateY(-1px); } }
+
+.axr-or { display: flex; align-items: center; gap: 0.8rem; margin: 1.1rem 0; font-size: 0.85rem; font-weight: 600; color: var(--ax-ink2); }
+.axr-or::before, .axr-or::after { content: ""; flex: 1; height: 1px; background: #e0bcb8; }
+
+
+/* campos */
+.axr-field { margin-bottom: 0.9rem; }
+.axr-field label { display: block; margin-bottom: 0.35rem; font-size: 0.92rem; font-weight: 700; color: var(--ax-ink); }
+.axr-ctl { position: relative; }
+.axr-ctl input { display: block; width: 100%; min-height: 3rem; padding: 0.7rem 0.9rem 0.7rem 2.75rem; border-radius: 0.9rem; border: 1.5px solid #d6b2ae; background: #fff; color: var(--ax-ink); font: inherit; font-size: 1rem; /* 16px: iOS no hace zoom */ transition: border-color 160ms ease, box-shadow 160ms ease; }
+.axr-ctl input::placeholder { color: #7a7570; }
+.axr-ctl input:focus { outline: none; border-color: var(--ax-rust); box-shadow: 0 0 0 4px rgb(200 30 43 / 0.16); }
+.axr-fi { position: absolute; left: 0.85rem; top: 50%; translate: 0 -50%; color: var(--ax-rust); pointer-events: none; }
+.axr-eye { position: absolute; right: 0.35rem; top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border: 0; border-radius: 50%; background: transparent; color: var(--ax-ink2); cursor: pointer; transition: transform 140ms var(--ax-out), background-color 160ms ease; }
+.axr-eye:active { transform: scale(0.92); }
+@media (hover: hover) and (pointer: fine) { .axr-eye:hover { background: #ffe0de; } }
+.axr-field.has-err input { border-color: #b91c1c; background: #fff8f7; }
+.axr-err { display: flex; align-items: flex-start; gap: 0.35rem; margin-top: 0.4rem; font-size: 0.85rem; font-weight: 600; color: #b91c1c; animation: axr-pop 220ms var(--ax-out) both; }
+.axr-err svg { flex: none; margin-top: 0.1rem; }
+
+.axr-meter { display: flex; align-items: center; gap: 0.7rem; margin: -0.2rem 0 1.1rem; font-size: 0.82rem; font-weight: 600; color: #5a564f; }
+.axr-meter-bars { display: grid; grid-template-columns: repeat(4, 2.2rem); gap: 0.3rem; flex: none; }
+.axr-meter-bars i { height: 0.4rem; border-radius: 99px; background: #ecd3d0; position: relative; overflow: hidden; }
+.axr-meter-bars i::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #b91c1c; transform-origin: left; transform: scaleX(0); transition: transform 320ms var(--ax-out), background-color 200ms ease; }
+.axr-meter-bars i.on::after { transform: scaleX(1); }
+.axr-meter[data-s="2"] i::after { background: #a16207; }
+.axr-meter[data-s="3"] i::after { background: #4d7c0f; }
+.axr-meter[data-s="4"] i::after { background: #15803d; }
+
+/* casilla */
+
+/* botones */
+.axr-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; min-height: 3.1rem; padding: 0.75rem 1.4rem; border: 1.5px solid var(--ax-rust); border-radius: 99px; background: var(--ax-rust); color: #fff6f5; font-family: var(--ax-display); font-weight: 700; font-size: 1.02rem; text-decoration: none; cursor: pointer; transition: transform 140ms var(--ax-out), background-color 160ms ease, color 160ms ease, box-shadow 160ms ease; }
+.axr-btn:active:not(:disabled) { transform: scale(0.97); }
+.axr-btn:disabled { cursor: default; opacity: 0.8; }
+.axr-btn svg { transition: transform 200ms var(--ax-out); }
+.axr-btn-ghost { background: transparent; color: var(--ax-rust); }
+@media (hover: hover) and (pointer: fine) {
+  .axr-btn:hover:not(:disabled) { background: #7a0f1b; border-color: #7a0f1b; box-shadow: 0 14px 28px -16px rgb(155 17 30 / 0.9); }
+  .axr-btn:hover:not(:disabled) svg:last-child { transform: translateX(3px); }
+  .axr-btn-ghost:hover:not(:disabled) { background: #ffe0de; color: var(--ax-rust); box-shadow: none; }
+}
+.axr-actions { display: grid; grid-template-columns: auto 1fr; gap: 0.6rem; }
+.axr-actions-col { grid-template-columns: 1fr; margin-top: 1.5rem; }
+.axr-login { margin-top: 1.1rem; text-align: center; font-size: 0.95rem; color: var(--ax-ink2); }
+.axr-spin { animation: ax-spin 800ms linear infinite; }
+
+/* éxito */
+.axr-done { text-align: center; padding-block: 0.5rem; }
+.axr-burst { position: relative; width: 5.5rem; height: 5.5rem; margin: 0 auto 1.25rem; }
+.axr-burst svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.axr-burst circle { fill: #e7f6ec; stroke: #15803d; stroke-width: 4; stroke-dasharray: 214; stroke-dashoffset: 214; animation: axr-draw 600ms var(--ax-out) 100ms forwards; }
+.axr-burst path { fill: none; stroke: #15803d; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 60; stroke-dashoffset: 60; animation: axr-draw 420ms var(--ax-out) 550ms forwards; }
+@keyframes axr-draw { to { stroke-dashoffset: 0; } }
+.axr-burst i { position: absolute; left: 50%; top: 50%; width: 0.55rem; height: 0.55rem; margin: -0.275rem; border-radius: 50%; background: var(--ax-ember-d); opacity: 0; animation: axr-spark 900ms var(--ax-out) 500ms forwards; }
+.axr-burst i[style*="--k: 1"] { background: var(--ax-ink); width: 0.4rem; height: 0.4rem; }
+@keyframes axr-spark { 0% { opacity: 1; transform: rotate(var(--a)) translateY(-2.4rem) scale(0.5); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-4.6rem) scale(1); } }
+
+
+/* ---------- Credencial 3D ----------
+   .axr-card (posición y Z) > .axr-float (entrada + vaivén) > .axr-card-in (giro) > caras.
+   Todo el interior usa em: la tarjeta escala completa y el texto nunca se corta ni se tapa. */
+.axr-card { --cw: min(24rem, calc(100vw - 3rem)); position: absolute; left: 50%; top: 50%; width: var(--cw); aspect-ratio: 1.586; font-size: calc(var(--cw) * 0.0417); transform: translate(-50%, -50%) translateZ(70px); transform-style: preserve-3d; }
+.axr-float, .axr-card-in { position: absolute; inset: 0; transform-style: preserve-3d; }
+.axr-float { animation: axr-enter 1000ms var(--ax-out) both, axr-sway 9s var(--ax-inout) 1000ms infinite; }
+@keyframes axr-enter { from { opacity: 0; transform: translateY(2.5em) rotateX(22deg) rotateY(-28deg) scale(0.9); } to { opacity: 1; transform: none; } }
+@keyframes axr-sway {
+  0%, 50%, 100% { transform: translateY(0) rotateY(0) rotateX(0); }
+  25% { transform: translateY(-0.4em) rotateY(-6deg) rotateX(2deg); }
+  75% { transform: translateY(0.5em) rotateY(6deg) rotateX(-2deg); }
+}
+@keyframes axr-fade { from { opacity: 0; } to { opacity: 1; } }
+.axr-card-in { transition: transform 700ms var(--ax-inout); }
+.axr-card-in.is-flip { transform: rotateY(180deg); }
+
+/* Cada cara se oculta también con opacidad a mitad del giro: el texto de la cara trasera nunca se ve al revés ni encima */
+.axr-face { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 1.35em 1.5em; border-radius: 1.45em; line-height: 1.2; color: #fff6f5; -webkit-backface-visibility: hidden; backface-visibility: hidden; box-shadow: 0 40px 70px -30px rgb(0 0 0 / 0.8), inset 0 0 0 1px rgb(255 255 255 / 0.22); transition: opacity 0s linear 350ms; }
+.axr-front { background: linear-gradient(135deg, #c81e2b 0%, #8f1020 55%, #4f0a13 100%); overflow: hidden; }
+.axr-back { background: linear-gradient(135deg, #2c1a1c, #150b0d); transform: rotateY(180deg); opacity: 0; }
+.axr-card-in.is-flip .axr-front { opacity: 0; }
+.axr-card-in.is-flip .axr-back { opacity: 1; }
+
+.axr-front::after { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / 0.1) 48%, transparent 60%); transform: translateX(-120%); animation: axr-sheen 6s var(--ax-inout) 1.6s infinite; }
+@keyframes axr-sheen { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+.axr-front-bg { position: absolute; z-index: 0; right: -4em; bottom: -5em; width: 17em; opacity: 0.18; pointer-events: none; }
+.axr-front-bg path, .axr-front-bg circle { fill: none; stroke: #fff1f0; stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.axr-card-top, .axr-chipset, .axr-card-num, .axr-card-bot { position: relative; z-index: 1; }
+.axr-card-top { display: flex; align-items: center; justify-content: space-between; gap: 0.5em; }
+.axr-brand { display: inline-flex; align-items: center; gap: 0.4em; font-family: var(--ax-display); font-weight: 800; font-size: 1.15em; letter-spacing: -0.02em; }
+.axr-tag { padding: 0.2em 0.7em; border-radius: 99px; background: rgb(255 246 245 / 0.18); border: 1px solid rgb(255 246 245 / 0.45); font-size: 0.8em; font-weight: 700; white-space: nowrap; }
+.axr-chipset { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; width: 2.6em; height: 2em; padding: 3px; border-radius: 0.45em; background: linear-gradient(135deg, #ffd9d5, #e59a94); }
+.axr-chipset i { border-radius: 2px; background: rgb(90 11 20 / 0.45); }
+.axr-card-num { font-size: 1.75em; letter-spacing: 0.08em; line-height: 1; }
+.axr-card-bot { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.75em; }
+.axr-card-name { min-width: 0; font-family: var(--ax-display); font-weight: 700; font-size: 1.2em; line-height: 1.15; letter-spacing: -0.01em; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.axr-card-city { flex: none; white-space: nowrap; font-family: var(--ax-serif); font-style: italic; font-size: 1.05em; color: #ffd0cb; }
+.axr-stamp { position: absolute; z-index: 2; right: 1.5em; top: 38%; padding: 0.2em 0.8em; border: 2px solid #fff6f5; border-radius: 0.4em; background: rgb(79 10 19 / 0.55); font-family: var(--ax-num); font-weight: 700; font-size: 1.4em; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0; transform: rotate(-10deg) scale(1.5); transition: opacity 240ms var(--ax-out) 300ms, transform 360ms var(--ax-out) 300ms; }
+.axr-card-in.is-done .axr-stamp { opacity: 1; transform: rotate(-10deg) scale(1); }
+
+.axr-back { padding-top: 5.4em; justify-content: flex-start; }
+.axr-stripe { position: absolute; left: 0; right: 0; top: 1.6em; height: 2.8em; background: #0a0506; }
+.axr-back-t { font-family: var(--ax-display); font-weight: 700; font-size: 1em; }
+.axr-sign { display: grid; align-items: center; min-height: 2.7em; margin-top: 0.8em; padding: 0 0.9em; border-radius: 0.5em; background: #fff6f5; color: var(--ax-ink); font-size: 1.4em; letter-spacing: 0.12em; overflow: hidden; }
+.axr-back-s { display: inline-flex; align-items: center; gap: 0.35em; margin-top: auto; font-size: 0.85em; font-weight: 600; color: #ffd0cb; }
+
+/* chips flotantes: viven fuera del área de la tarjeta, nunca tapan su texto */
+.axr-chip { position: absolute; z-index: 1; transform: translateZ(var(--z)); }
+.axr-chip-a { left: 0; top: 2%; --z: 110px; }
+.axr-chip-b { right: 0; bottom: 3%; --z: 140px; }
+@media (max-width: 639px) { .axr-chip { display: none; } .ax-hero-grid.axr-grid .ax-scene { aspect-ratio: 1.25; } }
+
+/* ---------- Movimiento reducido: menos y más suave, no cero ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .axr-form-card, .axr-panel, .axr-alert, .axr-err, .axr-fade { animation: axr-fade 200ms ease both; }
+  .axr-float { animation: axr-fade 400ms ease both; }
+  .axr-front::after, .axr-burst i { animation: none; }
+  .axr-burst i { display: none; }
+  .axr-burst circle, .axr-burst path { animation: none; stroke-dashoffset: 0; }
+  /* la credencial cambia de cara con un fundido, sin girar */
+  .axr-card-in, .axr-card-in.is-flip { transform: none; transition: none; }
+  .axr-face { transition: opacity 250ms ease; }
+  .axr-back { transform: none; }
+  .axr-stamp { transform: rotate(-10deg); }
+  .axr-thumb, .axr-collapse, .axr-collapse.is-open, .axr-meter-bars i::after, .axr-req .dot { transition-duration: 1ms; transition-delay: 0s; }
+}
+
+/* ---------- Requisitos de contraseña, aviso legal ---------- */
+.axr-req { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; margin: -0.1rem 0 0.7rem; padding: 0; list-style: none; font-size: 0.82rem; font-weight: 600; color: #5a564f; }
+.axr-req li { display: inline-flex; align-items: center; gap: 0.35rem; transition: color 200ms ease; }
+.axr-req .dot { display: grid; place-items: center; width: 1.05rem; height: 1.05rem; border-radius: 50%; border: 1.5px solid #cdb4b1; color: transparent; transition: background-color 200ms var(--ax-out), border-color 200ms var(--ax-out), color 200ms var(--ax-out), transform 200ms var(--ax-out); }
+.axr-req li.ok { color: #0f4d27; }
+.axr-req li.ok .dot { background: #15803d; border-color: #15803d; color: #fff; transform: scale(1.1); }
+.axr-legal { margin-top: 0.9rem; text-align: center; font-size: 0.82rem; line-height: 1.45; color: #5a564f; }
+.axr-legal a { color: var(--ax-rust); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- Avisos de campo (Bloq Mayús, sugerencia de correo) ---------- */
+.axr-note { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.4rem; font-size: 0.85rem; font-weight: 600; color: #6b4200; }
+.axr-sug { padding: 0; border: 0; background: none; font: inherit; font-weight: 700; color: var(--ax-rust); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.axr-fade { animation: axr-pop 300ms var(--ax-out) both; }
