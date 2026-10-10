@@ -1,0 +1,86 @@
+/* ==========================================================================
+   AutoRed · Inicio de sesión (prefijo axl-)
+   Se apoya en ax- (index.css) y axr- (formulario de Registro). Aquí solo va lo propio:
+   la disposición invertida (formulario a la IZQUIERDA), el tablero 3D y detalles del formulario.
+   Los colores salen de las variables de .ax (--ax-ember, --ax-txt-d…), así que siguen tu paleta.
+   ========================================================================== */
+
+/* ---------- Disposición: formulario a la izquierda, mensaje y escena a la derecha ---------- */
+.ax-hero-grid.axl-grid {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "head" "form" "scene";
+  gap: 2rem;
+  padding-block: 3rem 4rem;
+}
+@media (min-width: 1024px) {
+  .ax-hero-grid.axl-grid {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    grid-template-areas: "form head" "form scene";
+    column-gap: clamp(2rem, 5vw, 5rem);
+    row-gap: 1rem;
+    align-items: center;
+  }
+}
+.axl-head { grid-area: head; }
+.axl-formcol { grid-area: form; display: flex; justify-content: center; }
+.axl-formcol .axr-form-card { width: 100%; max-width: 30rem; }
+.axl-grid .ax-scene { grid-area: scene; max-width: 32rem; aspect-ratio: 5 / 4; }
+.axl-head .ax-h1 { font-size: clamp(2.4rem, 5.2vw, 4.4rem); }
+
+/* ---------- Tablero (escena 3D) ---------- */
+.axl-gauge { position: absolute; left: 50%; top: 46%; width: 60%; transform: translate(-50%, -50%) translateZ(40px); }
+.axl-gauge-in { position: relative; }
+.axl-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.axl-svg .bezel { fill: #2a1c18; stroke: color-mix(in srgb, var(--ax-txt-d) 45%, transparent); stroke-width: 1.5; }
+.axl-svg .track { fill: none; stroke: rgb(255 255 255 / 0.1); stroke-width: 5; stroke-linecap: round; }
+.axl-svg .red { fill: none; stroke: #ef4444; stroke-opacity: 0.75; stroke-width: 5; stroke-linecap: round; }
+.axl-svg .prog { fill: none; stroke: var(--ax-ember); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 1 1; filter: drop-shadow(0 0 3px var(--ax-ember)); transition: stroke-dashoffset 800ms cubic-bezier(0.34, 1.2, 0.5, 1); }
+.axl-svg .tick { stroke: rgb(255 241 240 / 0.45); stroke-width: 1; }
+.axl-svg .tick.M { stroke: rgb(255 241 240 / 0.9); stroke-width: 2; }
+.axl-svg .num { fill: rgb(255 241 240 / 0.88); font-family: var(--ax-num); font-size: 11px; font-weight: 600; text-anchor: middle; dominant-baseline: central; }
+.axl-svg .lbl { fill: rgb(255 241 240 / 0.62); font-family: var(--ax-body); font-size: 7px; letter-spacing: 0.12em; text-anchor: middle; }
+.axl-svg .needle { fill: var(--ax-ember); filter: drop-shadow(0 0 3px var(--ax-ember)); }
+.axl-svg .hub { fill: #1c1012; stroke: var(--ax-ember); stroke-width: 2; }
+.axl-svg .hub-d { fill: var(--ax-ember); }
+.axl-needle, .axl-idle { transform-origin: 100px 100px; }
+.axl-needle { transition: transform 800ms cubic-bezier(0.34, 1.45, 0.5, 1); }
+.axl-idle { animation: axl-idle 2.6s ease-in-out infinite alternate; }
+.axl-gauge.is-rev .axl-idle { animation: axl-rev 0.22s ease-in-out infinite alternate; }
+@keyframes axl-idle { from { transform: rotate(-1.6deg); } to { transform: rotate(1.6deg); } }
+@keyframes axl-rev { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+.axl-shake { animation: axl-shake 380ms var(--ax-out); }
+@keyframes axl-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+
+.axl-readout { position: absolute; left: 50%; bottom: 17%; transform: translateX(-50%); margin: 0; font-size: clamp(0.72rem, 1.5vw, 0.9rem); font-weight: 700; white-space: nowrap; color: var(--ax-txt-d); animation: axl-in 240ms var(--ax-out); }
+@keyframes axl-in { from { opacity: 0; transform: translate(-50%, 4px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* ---------- Testigos del tablero ---------- */
+.axl-lights { position: absolute; left: 50%; bottom: 1%; display: flex; gap: 0.6rem; transform: translateX(-50%) translateZ(90px); }
+.axl-light { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0.75rem; border-radius: 99px; border: 1px solid rgb(255 255 255 / 0.18); background: rgb(28 16 18 / 0.7); color: rgb(255 241 240 / 0.55); font-size: 0.78rem; font-weight: 700; transition: color 300ms var(--ax-out), border-color 300ms var(--ax-out), box-shadow 300ms var(--ax-out), transform 300ms var(--ax-out); }
+.axl-light.on { color: #86efac; border-color: rgb(134 239 172 / 0.6); box-shadow: 0 0 16px rgb(134 239 172 / 0.35); transform: scale(1.04); }
+.axl-light.err { color: #fca5a5; border-color: rgb(252 165 165 / 0.7); box-shadow: 0 0 16px rgb(239 68 68 / 0.4); animation: ax-pulse 1s ease-in-out infinite; }
+
+.axl-chip { position: absolute; transform: translateZ(var(--z)); }
+.axl-chip-a { left: -2%; top: 6%; --z: 150px; }
+.axl-chip-b { right: -2%; bottom: 22%; --z: 130px; }
+@media (max-width: 639px) { .axl-chip { display: none; } .axl-lights { gap: 0.4rem; } .axl-light { padding: 0.35rem 0.6rem; font-size: 0.72rem; } }
+
+/* ---------- Formulario: recordar correo y olvidé mi contraseña ---------- */
+.axl-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 1rem; margin: 0.15rem 0 0.9rem; }
+.axl-check { display: inline-flex; align-items: center; gap: 0.6rem; min-height: 2.75rem; font-size: 0.95rem; cursor: pointer; }
+.axl-check input { width: 1.2rem; height: 1.2rem; margin: 0; accent-color: var(--ax-ember-d); cursor: pointer; }
+.axl-forgot { display: inline-flex; align-items: center; min-height: 2.75rem; color: inherit; font-size: 0.95rem; font-weight: 600; text-decoration: underline; text-decoration-color: var(--ax-ember); text-underline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { .axl-forgot:hover { text-decoration-thickness: 2px; } }
+
+/* ---------- Éxito: barra de redirección ---------- */
+.axl-redirect { height: 4px; margin-top: 1.25rem; border-radius: 99px; overflow: hidden; background: color-mix(in srgb, currentColor 15%, transparent); }
+.axl-redirect i { display: block; height: 100%; background: linear-gradient(90deg, var(--ax-ember), var(--ax-ember-d)); transform-origin: left; animation: axl-fill 2.6s linear forwards; }
+@keyframes axl-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---------- Movimiento reducido: sin vibraciones ni giros; la aguja y los avisos se conservan sin rebote ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .axl-idle, .axl-gauge.is-rev .axl-idle, .axl-shake, .axl-light.err, .axl-readout { animation: none; }
+  .axl-needle { transition-duration: 1ms; }
+  .axl-svg .prog { transition: stroke-dashoffset 200ms ease; }
+  .axl-redirect i { animation: none; }
+}
