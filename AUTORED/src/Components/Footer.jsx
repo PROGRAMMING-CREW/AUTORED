@@ -1,6 +1,7 @@
 // Footer de AutoRed — componente independiente. Fondo oscuro con texto de alto contraste.
 import { Link } from 'react-router';
 import { ArrowUp, MapPin, WhatsappLogo, ShieldCheck } from '@phosphor-icons/react';
+import autored from "../assets/autored.png";
 
 const secciones = [
   { href: '#problema', label: 'Problemática' },
@@ -29,8 +30,13 @@ export default function Footer() {
           {/* Marca */}
           <div>
             <Link to="/" className="inline-flex items-center gap-2.5" aria-label="AutoRed, inicio">
-              <span className="grid h-9 w-9 place-items-center rounded-control bg-brand-600 font-display text-lg font-bold text-white">A</span>
-              <span className="font-display text-2xl font-semibold">autored</span>
+              <img
+                src={autored}
+                alt="Logo de AUTORED"
+                className="h-9 w-9 rounded-control object-contain"
+              />
+
+              <span className="font-display text-2xl font-semibold">AUTORED</span>
             </Link>
             <p className="mt-4 max-w-xs text-[0.9375rem] leading-relaxed text-white/80">
               La red que conecta refaccionarias y distribuidoras para encontrar la pieza correcta sin llamadas ni visitas.

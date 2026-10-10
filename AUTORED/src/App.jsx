@@ -506,7 +506,7 @@ function ChatDemo() {
     <Tilt max={4} className="ax-phone">
       <div className="ax-chat-head">
         <span className="ax-dot"><Robot size={22} weight="fill" aria-hidden="true" /></span>
-        <div><p style={{ fontWeight: 700 }}>AutoRed IA</p><p style={{ fontSize: '0.78rem', color: 'rgb(255 241 240 / 0.78)' }}>Chatbot con inteligencia artificial</p></div>
+        <div><p style={{ fontWeight: 700 }}>AutoRed IA</p><p style={{ fontSize: '0.78rem', color: 'rgb(255 241 240 / 0.78)' }}>Asistente virtual</p></div>
         <span className="live">En línea</span>
       </div>
       <div className="ax-chat-body" role="log" aria-live="polite" aria-label="Conversación de ejemplo">
@@ -653,10 +653,10 @@ export default function App() {
                 </p>
                 <div className="ax-hero-cta">
                   <Button size="lg" effect="ring" arrow onClick={() => irA('funciones')}>Explorar la plataforma</Button>
-                  <Button size="lg" variant="secondary" effect="fill" onClick={() => irA('solucion')}>Ver el chatbot</Button>
+                  <Button size="lg" variant="secondary" effect="fill" onClick={() => irA('solucion')}>Ver Asistente virtual</Button>
                 </div>
                 <ul className="ax-checks">
-                  {['Inventario en tiempo real', 'Búsqueda por filtros', 'Chatbot con IA', 'Red segura'].map((x) => (
+                  {['Inventario en tiempo real', 'Búsqueda por filtros', 'Asistente virtual', 'Red segura'].map((x) => (
                     <li key={x}><CheckCircle size={18} weight="fill" aria-hidden="true" />{x}</li>
                   ))}
                 </ul>
@@ -841,7 +841,7 @@ export default function App() {
 
               <Reveal className="ax-b6" delay={70}><Tilt max={3} className="ax-bcard">
                 <span className="ax-ico"><Robot size={28} weight={W} aria-hidden="true" /></span>
-                <h3 className="ax-card-t">Chatbot con inteligencia artificial</h3>
+                <h3 className="ax-card-t">Aistente virtual</h3>
                 <p className="ax-card-p">Responde dudas, recomienda piezas compatibles y te guía a cada apartado de la plataforma.</p>
                 <div className="ax-ai-line" aria-hidden="true"><span className="ax-typing"><i /><i /><i /></span>Buscando piezas compatibles…</div>
               </Tilt></Reveal>
