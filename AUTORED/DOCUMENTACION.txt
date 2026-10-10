@@ -41,23 +41,27 @@ git push
 baja los cambios 
 git pull
 
+
+============= RAMAS =================
+Visualiza en que rama te encuentras
+git branch 
+
+============= Traer cambios de main a tu rama secundaria -------------------
 entrar a tu rama 
 git switch nombre_rama 
-
 trae cambios de main a tu rama (cuidado con que no choque ningun cambio con tu rama )
 git merge origin/main
+subir cambios 
+git push 
 
-git push subir cambios 
 
-
-
-subir cambios a rama principal desde las secundarios 
+=================Traer cambios de rama secundaria a main ==================
 antes guarda cambios con 
 git add .
 git commit -m "Guarda cambios"
 
-luego 
 
+luego 
 git switch main
 git pull origin main
 git merge nombre_rama
