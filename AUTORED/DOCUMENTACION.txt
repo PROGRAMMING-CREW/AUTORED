@@ -1,0 +1,36 @@
+================== REACT Y VITE ===========================
+
+YA NO UTILICES ESTE COMANDO YA ESTA INSTALADO "REACT Y VITE"
+npm create vite@latest autored -- --template react
+
+
+================= INSTALACION DE DEPENDENCIAS ==============
+entrar a la carpeta autored 
+cd autored
+instalar dependencias de node 
+npm install 
+
+
+================= COMPILACION ==============
+entrar a careta autored
+prende el servidor con este comando para ver el front y tus cambios 
+npm run dev 
+
+
+================== INSTALACION DE TALWIND ==================    
+comando que instala talwind y dependencias
+npm install tailwindcss @tailwindcss/vite
+
+
+=================Comandos de GITHUB======================
+Cada vez que inicien el proyecto coloque este comando
+git pull
+Este comando trae todos los cambios que se hayan realizado en el proyecto
+
+git add .
+git commit -m "Primer commit del proyecto React"
+git branch -M nombre-de-rama
+git push
+
+baja los cambios 
+git pull
