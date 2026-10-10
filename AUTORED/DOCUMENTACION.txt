@@ -40,3 +40,25 @@ git push
 
 baja los cambios 
 git pull
+
+entrar a tu rama 
+git switch nombre_rama 
+
+trae cambios de main a tu rama (cuidado con que no choque ningun cambio con tu rama )
+git merge origin/main
+
+git push subir cambios 
+
+
+
+subir cambios a rama principal desde las secundarios 
+antes guarda cambios con 
+git add .
+git commit -m "Guarda cambios"
+
+luego 
+
+git switch main
+git pull origin main
+git merge nombre_rama
+git push origin main
