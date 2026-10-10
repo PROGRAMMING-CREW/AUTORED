@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+/* ============ TOKENS (Tailwind v4: sin tailwind.config.js) ============ */
+@theme {
+  /* Acento "brasa": 600 con texto blanco = contraste 5.2:1 */
+  --color-brand-50: #FFF4EC;  --color-brand-100: #FFE6D2; --color-brand-200: #FFCBA4;
+  --color-brand-300: #FFA66B; --color-brand-400: #F97A30; --color-brand-500: #E85D12;
+  --color-brand-600: #C2410C; --color-brand-700: #9A3412; --color-brand-800: #7C2D12; --color-brand-900: #5E2410;
+
+  /* Neutros grafito cálidos */
+  --color-ink-50: #F7F6F4;  --color-ink-100: #EFEDEA; --color-ink-200: #E1DED9;
+  --color-ink-300: #C9C5BE; --color-ink-400: #A09B93; --color-ink-500: #78736B;
+  --color-ink-600: #5A564F; --color-ink-700: #413E39; --color-ink-800: #2B2927;
+  --color-ink-900: #1B1A18; --color-ink-950: #121110;
+
+  /* Estados */
+  --color-ok-50: #ECFDF3;     --color-ok-100: #D1FADF;     --color-ok-700: #15803D;
+  --color-warn-50: #FFFBEB;   --color-warn-100: #FEF0C7;   --color-warn-700: #A16207;
+  --color-danger-50: #FEF2F2; --color-danger-100: #FEE2E2; --color-danger-600: #DC2626; --color-danger-700: #B91C1C;
+
+  --font-sans: "Hanken Grotesk", system-ui, sans-serif;
+  --font-display: "Barlow Condensed", "Hanken Grotesk", system-ui, sans-serif;
+
+  --radius-control: 0.625rem;
+  --radius-surface: 0.875rem;
+
+  --shadow-card: 0 1px 2px rgb(27 26 24 / 0.05), 0 1px 3px rgb(27 26 24 / 0.04);
+  --shadow-pop: 0 8px 24px -8px rgb(27 26 24 / 0.18), 0 2px 6px rgb(27 26 24 / 0.06);
+
+  /* Reemplaza `ease-out` por una curva más enérgica */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  --animate-rise: autored-rise 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-fade: autored-fade 200ms ease both;
+  --animate-spin-fast: autored-spin 600ms linear infinite;
+
+  @keyframes autored-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes autored-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes autored-spin { to { transform: rotate(360deg); } }
+}
+
+/* ============ BASE ============ */
+@layer base {
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply min-h-dvh font-sans text-ink-900 antialiased;
+    margin: 0;
+    background-color: var(--color-ink-50);
+    background-image:
+      radial-gradient(48rem 26rem at 100% -8%, color-mix(in srgb, var(--color-brand-200) 45%, transparent), transparent 70%),
+      radial-gradient(40rem 24rem at -8% 8%, var(--color-ink-100), transparent 70%);
+    background-repeat: no-repeat;
+  }
+  body::before, body::after { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+  body::before {
+    background-image: radial-gradient(color-mix(in srgb, var(--color-ink-400) 45%, transparent) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(to bottom, #000, rgb(0 0 0 / 0.3));
+  }
+  body::after {
+    background-image: radial-gradient(var(--color-brand-400) 1.4px, transparent 1.8px);
+    background-size: 22px 22px;
+    opacity: 0.5;
+    mask-image: radial-gradient(60rem 28rem at 100% 0%, #000, transparent 70%);
+  }
+  h1, h2, h3 { @apply font-display tracking-tight text-ink-900; text-wrap: balance; }
+  :focus-visible { @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-ink-50; }
+  ::selection { @apply bg-brand-200 text-ink-900; }
+}
+
+/* ============ COMPONENTES ============ */
+@layer components {
+  /* --- Layout --- */
+  .page { @apply w-full px-4 sm:px-6; }
+  .page-title { @apply font-display text-3xl font-semibold sm:text-4xl; }
+  .section-title { @apply font-display text-xl font-semibold; }
+  .muted { @apply text-sm text-ink-500; }
+
+  /* --- Botones (44px de alto = zona táctil cómoda) --- */
+  .btn {
+    @apply inline-flex h-11 select-none items-center justify-center gap-2 rounded-control px-5
+           text-[0.9375rem] font-semibold leading-none
+           transition-[transform,background-color,border-color,color,box-shadow] duration-[140ms] ease-out
+           active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-sm { @apply h-9 px-3.5 text-sm; }
+  .btn-lg { @apply h-12 px-6 text-base; }
+  .btn-primary   { @apply bg-brand-600 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_1px_2px_rgb(27_26_24/0.25)]; }
+  .btn-secondary { @apply border border-ink-300 bg-white text-ink-900; }
+  .btn-ghost     { @apply text-ink-700; }
+  .btn-danger    { @apply bg-danger-600 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.15),0_1px_2px_rgb(27_26_24/0.25)]; }
+  .btn[aria-busy='true']:disabled { @apply opacity-100; }
+  .btn .arrow { @apply transition-transform duration-[180ms] ease-out; }
+
+  /* --- Formularios (16px de texto: iOS no hace zoom al enfocar) --- */
+  .field { @apply flex flex-col gap-1.5; }
+  .label { @apply text-sm font-medium text-ink-700; }
+  .input {
+    @apply h-11 w-full rounded-control border border-ink-300 bg-white px-3.5 text-base text-ink-900
+           placeholder:text-ink-400 transition-[border-color,box-shadow] duration-[180ms] ease-out
+           focus:border-brand-600 focus:ring-2 focus:ring-brand-600/25 focus-visible:ring-offset-0
+           disabled:bg-ink-100 disabled:text-ink-500;
+  }
+  textarea.input { @apply h-auto min-h-28 py-2.5; }
+  .input[aria-invalid='true'] { @apply border-danger-600 focus:ring-danger-600/25; }
+  .field-hint  { @apply text-sm text-ink-500; }
+  .field-error { @apply text-sm font-medium text-danger-700; }
+
+  /* --- Tarjetas --- */
+  .card { @apply rounded-surface border border-ink-200 bg-white shadow-card; }
+  .card-pad { @apply p-4 sm:p-5; }
+  .card-interactive {
+    @apply cursor-pointer rounded-surface border border-ink-200 bg-white shadow-card transition-[transform,box-shadow,border-color] duration-[180ms] ease-out
+           active:scale-[0.99];
+  }
+
+  /* --- Insignias de estado --- */
+  .badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold leading-none; }
+  .badge-neutral { @apply bg-ink-100 text-ink-700; }
+  .badge-brand   { @apply bg-brand-100 text-brand-800; }
+  .badge-ok      { @apply bg-ok-100 text-ok-700; }
+  .badge-warn    { @apply bg-warn-100 text-warn-700; }
+  .badge-danger  { @apply bg-danger-100 text-danger-700; }
+
+  /* --- Chip (p. ej. "Mi garage") --- */
+  .chip {
+    @apply inline-flex h-9 select-none items-center gap-2 rounded-full border border-ink-200 bg-white px-3.5
+           text-sm font-medium text-ink-800 transition-[transform,border-color,background-color] duration-[140ms] ease-out
+           active:scale-[0.97];
+  }
+  select.input {
+    appearance: none; padding-right: 2.5rem; background-repeat: no-repeat; background-position: right 0.75rem center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2378736B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+
+  /* --- Aparecer al hacer scroll (desvanecer + subir) --- */
+  .reveal {
+    opacity: 0; transform: translateY(14px);
+    transition: opacity 380ms var(--ease-out), transform 380ms var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal.is-visible { opacity: 1; transform: none; }
+
+  /* --- Específicos de autopartes --- */
+  .price { @apply font-display text-2xl font-semibold tabular-nums text-ink-900; }
+  .sku   { @apply font-mono text-xs tracking-wide text-ink-500; }
+
+  /* --- Tablas --- */
+  .table-wrap { @apply overflow-x-auto rounded-surface border border-ink-200 bg-white; }
+  .table { @apply w-full text-left text-sm; }
+  .table th { @apply bg-ink-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-500; }
+  .table td { @apply border-t border-ink-100 px-4 py-3 text-ink-800; }
+
+  /* --- Varios --- */
+  .link { @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-4; }
+  .skeleton { @apply animate-pulse rounded-control bg-ink-200; }
+
+  /* Hover solo en dispositivos con puntero real (en táctil se queda "pegado") */
+  @media (hover: hover) and (pointer: fine) {
+    .btn-primary:hover   { @apply -translate-y-px bg-brand-700 shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_10px_20px_-10px_rgb(194_65_12/0.7)]; }
+    .btn:hover .arrow    { @apply translate-x-[3px]; }
+    .btn-secondary:hover { @apply border-ink-400 bg-ink-50 shadow-sm; }
+    .btn-ghost:hover     { @apply bg-ink-100 text-ink-900; }
+    .btn-danger:hover    { @apply bg-danger-700; }
+    .input:hover:not(:focus):not(:disabled) { @apply border-ink-400; }
+    .card-interactive:hover { @apply -translate-y-px border-ink-300 shadow-pop; }
+    .table tbody tr:hover td { @apply bg-ink-50; }
+    .link:hover { @apply decoration-brand-600; }
+    .chip:hover { @apply border-ink-300 bg-ink-50; }
+  }
+}
+
+@layer components { .btn-primary:active { @apply translate-y-0; } }
+
+/* Movimiento reducido: se quita el desplazamiento, se conserva el fundido */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .card-interactive { transform: none !important; }
+  .reveal { transform: none; transition-duration: 200ms; }
+  .animate-rise { animation-name: fade; }
+}
+
+/* Quita el ancho máximo y el relleno que trae la plantilla de Vite */
+html body { display: block; place-items: initial; }
+html body #root { width: 100%; max-width: none; margin: 0; padding: 0; text-align: left; }
