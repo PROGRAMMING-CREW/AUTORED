@@ -341,7 +341,6 @@
   .ax-track { scroll-behavior: auto; }
 }
 
-
 /* ==========================================================================
    REGISTRO (axr-) — pegar al FINAL de Index.css.
    Todo lo demás de la página de registro reutiliza las clases ax- existentes.
@@ -539,3 +538,73 @@
 .axr-note { display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.4rem; font-size: 0.85rem; font-weight: 600; color: #6b4200; }
 .axr-sug { padding: 0; border: 0; background: none; font: inherit; font-weight: 700; color: var(--ax-rust); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .axr-fade { animation: axr-pop 300ms var(--ax-out) both; }
+
+/* ==========================================================================
+   MODAL: verificación de correo (código de 6 dígitos)
+   Se monta en document.body con la clase .ax para heredar las variables.
+   ========================================================================== */
+@keyframes axr-fade-out { to { opacity: 0; } }
+@keyframes axr-modal-in { from { opacity: 0; transform: translateY(28px) rotateX(16deg) scale(0.95); } to { opacity: 1; transform: none; } }
+@keyframes axr-modal-out { to { opacity: 0; transform: translateY(12px) scale(0.98); } }
+@keyframes axr-hop { 50% { transform: translateY(-7px); } }
+
+.axr-modal-root { position: fixed; inset: 0; z-index: 1000; display: grid; padding: 1rem; overflow-y: auto; perspective: 1400px; animation: axr-fade 220ms ease both; }
+.axr-modal-root.is-out { animation: axr-fade-out 200ms ease both; }
+.axr-backdrop { position: fixed; inset: 0; background: rgb(18 10 11 / 0.74); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.axr-modal { position: relative; width: 100%; max-width: 27rem; margin: auto; padding: clamp(1.5rem, 4vw, 2.25rem); border-radius: 1.75rem; overflow: hidden; text-align: center; background: var(--ax-cream); color: var(--ax-ink); border: 1px solid rgb(255 255 255 / 0.5); box-shadow: 0 60px 100px -40px rgb(0 0 0 / 0.9), 0 0 0 1px rgb(0 0 0 / 0.3), 0 30px 80px -50px rgb(239 75 67 / 0.8); transform-origin: 50% 100%; animation: axr-modal-in 480ms var(--ax-out) both; }
+.axr-modal-root.is-out .axr-modal { animation: axr-modal-out 200ms ease-in both; }
+.axr-modal > *:not(.axr-m-gear) { position: relative; }
+.axr-modal :focus-visible { outline-color: var(--ax-ember-d); }
+.axr-modal .ax-em { color: var(--ax-txt-l); }
+.axr-m-gear { position: absolute; right: -5rem; top: -5rem; width: 14rem; opacity: 0.13; pointer-events: none; animation: ax-spin 70s linear infinite; }
+.axr-m-gear path, .axr-m-gear circle { fill: none; stroke: var(--ax-rust); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.axr-modal .axr-m-close { position: absolute; top: 0.9rem; right: 0.9rem; z-index: 2; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 0; border-radius: 50%; background: transparent; color: var(--ax-ink2); cursor: pointer; transition: transform 140ms var(--ax-out), background-color 160ms ease; }
+.axr-m-close:active:not(:disabled) { transform: scale(0.92); }
+.axr-m-close:disabled { opacity: 0.4; cursor: default; }
+@media (hover: hover) and (pointer: fine) { .axr-m-close:hover:not(:disabled) { background: #ffe0de; } }
+
+/* sobre 3D: la solapa se abre y la carta sube */
+.axr-env { width: 5.6rem; height: 4rem; margin: 1.6rem auto 1.3rem; perspective: 520px; }
+.axr-env i { position: absolute; display: block; }
+.axr-env-back { inset: 0; border-radius: 0.45rem; background: #f2b9b3; }
+.axr-env-flap { z-index: 1; left: 0; right: 0; top: 0; height: 62%; background: linear-gradient(#b5162a, #9b111e); clip-path: polygon(0 0, 100% 0, 50% 100%); transform-origin: top; animation: axr-flap 650ms var(--ax-inout) 300ms both; }
+@keyframes axr-flap { to { transform: rotateX(180deg); } }
+.axr-env-letter { z-index: 2; left: 0.55rem; right: 0.55rem; top: 0.5rem; bottom: 0.5rem; display: grid; align-content: center; gap: 0.3rem; padding-inline: 0.6rem; border-radius: 0.3rem; background: #fff; box-shadow: 0 4px 10px -4px rgb(0 0 0 / 0.35); opacity: 0; animation: axr-letter 650ms var(--ax-out) 850ms both; }
+.axr-env-letter b { display: block; height: 0.28rem; border-radius: 99px; background: #e8a09b; }
+.axr-env-letter b:last-child { width: 60%; background: #d6b2ae; }
+@keyframes axr-letter { from { opacity: 0; transform: translateY(0); } to { opacity: 1; transform: translateY(-1.35rem); } }
+.axr-env-front { z-index: 3; inset: 0; border-radius: 0 0 0.45rem 0.45rem; background: linear-gradient(160deg, #ef4b43, #c81e2b); clip-path: polygon(0 36%, 50% 64%, 100% 36%, 100% 100%, 0 100%); }
+
+.axr-m-t { font-family: var(--ax-display); font-weight: 800; font-size: clamp(1.7rem, 4vw, 2.1rem); letter-spacing: -0.03em; line-height: 1.1; }
+.axr-m-s { margin: 0.6rem auto 0; max-width: 22rem; line-height: 1.55; color: var(--ax-ink2); }
+.axr-m-s b { color: var(--ax-ink); overflow-wrap: anywhere; }
+
+/* casillas del código */
+.axr-otp { display: flex; justify-content: center; gap: 0.45rem; margin: 1.5rem 0 0.4rem; }
+.axr-otp input { width: clamp(2.35rem, 12vw, 3.1rem); height: 3.6rem; padding: 0; border-radius: 0.9rem; border: 1.5px solid #d6b2ae; background: #fff; color: var(--ax-ink); caret-color: var(--ax-rust); text-align: center; font-family: var(--ax-num); font-weight: 600; font-size: 2rem; transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease, transform 160ms var(--ax-out); }
+.axr-otp input:nth-child(3) { margin-right: 0.45rem; }
+.axr-otp input:focus { outline: none; border-color: var(--ax-rust); box-shadow: 0 0 0 4px rgb(200 30 43 / 0.16); transform: translateY(-2px); }
+.axr-otp input.has { border-color: var(--ax-rust); background: #fff0ee; }
+.axr-otp.is-err input { border-color: #b91c1c; background: #fff8f7; }
+.axr-otp.is-ok input { border-color: #15803d; background: #e7f6ec; color: #0f4d27; animation: axr-hop 420ms var(--ax-out) both; animation-delay: calc(var(--i) * 55ms); }
+
+.axr-m-status { display: grid; place-items: center; min-height: 2.6rem; margin-bottom: 0.4rem; }
+.axr-modal .axr-err { justify-content: center; margin-top: 0; text-align: left; }
+.axr-m-info, .axr-m-ok { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.92rem; font-weight: 600; color: var(--ax-ink2); animation: axr-pop 240ms var(--ax-out) both; }
+.axr-m-ok { color: #0f4d27; }
+.axr-m-ok svg { color: #15803d; }
+.axr-m-foot { display: grid; justify-items: center; gap: 0.5rem; margin-top: 1.1rem; font-size: 0.92rem; color: var(--ax-ink2); }
+.axr-link { padding: 0.2rem 0.3rem; border: 0; background: none; font: inherit; font-weight: 700; color: var(--ax-rust); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; transition: transform 140ms var(--ax-out); }
+.axr-link:active:not(:disabled) { transform: scale(0.96); }
+.axr-link:disabled { opacity: 0.45; cursor: default; }
+.axr-demo { margin-top: 1.1rem; padding: 0.5rem 0.8rem; border-radius: 0.7rem; background: #fff1d6; border: 1px dashed #c98a1b; color: #6b4200; font-size: 0.82rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .axr-modal-root, .axr-modal { animation: axr-fade 150ms ease both; }
+  .axr-modal-root.is-out, .axr-modal-root.is-out .axr-modal { animation: axr-fade-out 120ms ease both; }
+  .axr-m-gear { animation: none; }
+  .axr-env-flap { animation: none; transform: rotateX(180deg); }
+  .axr-env-letter { animation: none; opacity: 1; transform: translateY(-1.35rem); }
+  .axr-otp.is-ok input { animation: none; }
+  .axr-otp input:focus { transform: none; }
+}

@@ -1,7 +1,8 @@
 // Registro de usuario — AutoRed. Reutiliza los estilos de ./index.css (prefijo ax-).
-// Los extras (formulario, credencial 3D) llevan prefijo axr- y van al final de Index.css.
+// Los extras (formulario, credencial 3D, modal de verificación) llevan prefijo axr- y van al final de Index.css.
 // Ubicación: src/Login/Registro.jsx
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useSearchParams } from 'react-router';
 import { Badge, Reveal } from '../autored-ui';
 import Nav from '../Components/Nav';
@@ -9,7 +10,7 @@ import Footer from '../Components/Footer';
 import '../index.css';
 import {
   Storefront, SteeringWheel, User, Envelope, Lock, Eye, EyeSlash, Check, CheckCircle,
-  WarningCircle, CircleNotch, Gear, ArrowsClockwise, WhatsappLogo, ArrowRight,
+  WarningCircle, CircleNotch, Gear, ArrowsClockwise, WhatsappLogo, ArrowRight, X,
 } from '@phosphor-icons/react';
 
 const cx = (...c) => c.filter(Boolean).join(' ');
@@ -22,14 +23,26 @@ const finePointer = () => window.matchMedia('(hover: hover) and (pointer: fine)'
 //  · Google real: Firebase -> signInWithPopup(auth, new GoogleAuthProvider())
 //                 o @react-oauth/google -> useGoogleLogin(). Devuelve { nombre, correo }.
 //  · Crear cuenta: POST a tu endpoint con { tipo, nombre, correo, password, negocio }.
+//    Con correo manual el backend envía un código de 6 dígitos y se abre el modal de verificación.
+//  · Verificar: POST { correo, codigo }.  Reenviar: POST { correo }.
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 async function registrarConGoogle(/* tipo */) {
   await wait(900); // simulación
   return { nombre: 'Carlos Ramírez', correo: 'carlos.ramirez@gmail.com' };
 }
 async function crearCuenta(/* datos */) {
-  await wait(1100); // simulación
+  await wait(1100); // simulación (con correo manual: crea la cuenta sin verificar y envía el código)
   return { ok: true };
+}
+const LONG = 6;
+const MODO_DEMO = true;        // TODO: quítalo al conectar el backend
+const CODIGO_DEMO = '123456';  // TODO: la validación real la hace tu backend
+async function verificarCodigo(codigo /*, correo */) {
+  await wait(900); // simulación
+  return MODO_DEMO && codigo === CODIGO_DEMO;
+}
+async function reenviarCodigo(/* correo */) {
+  await wait(600); // simulación
 }
 
 /* ======================= HOOKS ======================= */
@@ -161,6 +174,165 @@ const reglas = {
   negocio: (v) => (v.trim().length < 2 ? 'Escribe el nombre de tu negocio.' : ''),
 };
 
+/* ======================= MODAL: VERIFICAR CORREO ======================= */
+// Solo se abre cuando la cuenta se crea con correo y contraseña (no con Google).
+function VerifyModal({ correo, onClose, onVerified, returnRef }) {
+  const uid = useId().replace(/:/g, '');
+  const dlg = useRef(null);
+  const otp = useRef(null);
+  const cajas = useRef([]);
+  const timers = useRef([]);
+  const [dig, setDig] = useState(() => Array(LONG).fill(''));
+  const [estado, setEstado] = useState('idle'); // idle | verificando | ok
+  const [error, setError] = useState('');
+  const [aviso, setAviso] = useState('');
+  const [intentos, setIntentos] = useState(0);
+  const [seg, setSeg] = useState(30);
+  const [saliendo, setSaliendo] = useState(false);
+  const ocupado = estado !== 'idle';
+  const foco = (i) => cajas.current[i]?.focus();
+  const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.current.push(t); };
+
+  // Bloquea el scroll de fondo (sin saltos por la barra de Windows), enfoca el primer dígito y devuelve el foco al cerrar
+  useEffect(() => {
+    const b = document.body, ov = b.style.overflow, pr = b.style.paddingRight;
+    const sb = window.innerWidth - document.documentElement.clientWidth;
+    b.style.overflow = 'hidden';
+    if (sb > 0) b.style.paddingRight = `${sb}px`;
+    foco(0);
+    const ts = timers.current;
+    return () => { b.style.overflow = ov; b.style.paddingRight = pr; ts.forEach(clearTimeout); returnRef?.current?.focus(); };
+  }, [returnRef]);
+
+  // Cuenta regresiva del reenvío
+  useEffect(() => {
+    if (seg <= 0) return;
+    const t = setTimeout(() => setSeg((v) => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [seg]);
+
+  const cerrar = () => {
+    if (ocupado || saliendo) return;
+    setSaliendo(true);
+    later(onClose, reduced() ? 0 : 200);
+  };
+
+  // Esc cierra y Tab no sale del diálogo
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); cerrar(); return; }
+      if (e.key !== 'Tab' || !dlg.current) return;
+      const f = [...dlg.current.querySelectorAll('button:not([disabled]), input:not([disabled])')];
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  });
+
+  const sacudir = () => {
+    if (reduced() || !otp.current?.animate) return;
+    otp.current.animate(
+      [{ transform: 'translateX(0)' }, { transform: 'translateX(-9px)' }, { transform: 'translateX(9px)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(0)' }],
+      { duration: 400, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
+    );
+  };
+
+  const verificar = async (codigo) => {
+    if (codigo.length < LONG) {
+      setError('Escribe los 6 dígitos del código.'); sacudir();
+      foco(Math.max(0, dig.findIndex((d) => !d)));
+      return;
+    }
+    setEstado('verificando'); setError(''); setAviso('');
+    const ok = await verificarCodigo(codigo, correo);
+    if (ok) { setEstado('ok'); later(onVerified, reduced() ? 700 : 1600); return; }
+    setEstado('idle'); setIntentos((n) => n + 1);
+    setError(intentos >= 2 ? 'Código incorrecto. Si no te llega, revisa spam o reenvía el código.' : 'Código incorrecto. Revisa tu correo e inténtalo de nuevo.');
+    sacudir();
+    later(() => { setDig(Array(LONG).fill('')); foco(0); }, 450);
+  };
+
+  // Reparte uno o varios dígitos (teclear, pegar o autocompletar del SMS/correo)
+  const poner = (desde, texto) => {
+    if (ocupado) return;
+    const nums = texto.replace(/\D/g, '').slice(0, LONG - desde).split('').filter(Boolean);
+    if (!nums.length) return;
+    const next = [...dig];
+    nums.forEach((n, k) => { next[desde + k] = n; });
+    setDig(next); setError(''); setAviso('');
+    foco(Math.min(desde + nums.length, LONG - 1));
+    if (next.every(Boolean)) verificar(next.join(''));
+  };
+  const cambiar = (i, raw) => {
+    const v = raw.replace(/\D/g, '');
+    if (!v) { const n = [...dig]; n[i] = ''; setDig(n); return; }
+    poner(i, v.length === 2 && dig[i] ? (v[0] === dig[i] ? v[1] : v[0]) : v);
+  };
+  const teclas = (i, e) => {
+    if (e.key === 'Backspace' && !dig[i] && i > 0) { e.preventDefault(); const n = [...dig]; n[i - 1] = ''; setDig(n); foco(i - 1); }
+    else if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); foco(i - 1); }
+    else if (e.key === 'ArrowRight' && i < LONG - 1) { e.preventDefault(); foco(i + 1); }
+    else if (e.key === 'Enter') { e.preventDefault(); verificar(dig.join('')); }
+  };
+  const reenviar = async () => {
+    setSeg(30); setDig(Array(LONG).fill('')); setError(''); setAviso('Te enviamos un código nuevo.'); foco(0);
+    await reenviarCodigo(correo);
+  };
+
+  return createPortal(
+    <div className={cx('ax axr-modal-root', saliendo && 'is-out')}>
+      <div className="axr-backdrop" aria-hidden="true" />
+      <div ref={dlg} className="axr-modal" role="dialog" aria-modal="true" aria-labelledby={`${uid}-t`} aria-describedby={`${uid}-d`}>
+        <svg className="axr-m-gear" viewBox="0 0 200 200" aria-hidden="true"><path d={gearPath(14, 96, 80)} /><circle cx="100" cy="100" r="34" /><circle cx="100" cy="100" r="62" /></svg>
+        <button type="button" className="axr-m-close" onClick={cerrar} disabled={ocupado} aria-label="Cerrar y cambiar correo"><X size={20} weight="bold" aria-hidden="true" /></button>
+
+        <div className="axr-env" aria-hidden="true">
+          <i className="axr-env-back" /><i className="axr-env-flap" /><i className="axr-env-letter"><b /><b /></i><i className="axr-env-front" />
+        </div>
+
+        <h2 id={`${uid}-t`} className="axr-m-t">Revisa tu <em className="ax-em">correo</em></h2>
+        <p id={`${uid}-d`} className="axr-m-s">Enviamos un código de 6 dígitos a <b>{correo}</b>. Escríbelo para activar tu cuenta.</p>
+
+        <div ref={otp} className={cx('axr-otp', error && 'is-err', estado === 'ok' && 'is-ok')} role="group" aria-label="Código de verificación">
+          {dig.map((d, i) => (
+            <input key={i} ref={(el) => { cajas.current[i] = el; }} className={d ? 'has' : undefined} style={{ '--i': i }}
+              value={d} inputMode="numeric" pattern="[0-9]*" autoComplete={i === 0 ? 'one-time-code' : 'off'}
+              aria-label={`Dígito ${i + 1} de ${LONG}`} aria-invalid={error ? 'true' : undefined} readOnly={ocupado}
+              onFocus={(e) => e.target.select()} onChange={(e) => cambiar(i, e.target.value)} onKeyDown={(e) => teclas(i, e)}
+              onPaste={(e) => { e.preventDefault(); const t = e.clipboardData.getData('text'); poner(t.replace(/\D/g, '').length >= LONG ? 0 : i, t); }} />
+          ))}
+        </div>
+
+        <div className="axr-m-status" aria-live="polite">
+          {estado === 'verificando' && <span className="axr-m-info"><CircleNotch className="axr-spin" size={18} weight="bold" aria-hidden="true" />Verificando…</span>}
+          {estado === 'ok' && <span className="axr-m-ok"><CheckCircle size={20} weight="fill" aria-hidden="true" />¡Correo verificado! Entrando…</span>}
+          {estado === 'idle' && error && <p className="axr-err" role="alert"><WarningCircle size={16} weight="fill" aria-hidden="true" />{error}</p>}
+          {estado === 'idle' && !error && aviso && <span className="axr-m-info">{aviso}</span>}
+        </div>
+
+        <button type="button" className="axr-btn" onClick={() => verificar(dig.join(''))} disabled={ocupado} aria-busy={estado === 'verificando'}>
+          {estado === 'verificando' ? <><CircleNotch className="axr-spin" size={20} weight="bold" aria-hidden="true" />Verificando…</>
+            : estado === 'ok' ? <><Check size={20} weight="bold" aria-hidden="true" />Cuenta verificada</>
+            : <>Verificar y crear cuenta<ArrowRight size={20} weight="bold" aria-hidden="true" /></>}
+        </button>
+
+        <div className="axr-m-foot">
+          {seg > 0
+            ? <p>¿No llegó? Puedes pedir otro código en <b className="ax-num">0:{String(seg).padStart(2, '0')}</b></p>
+            : <button type="button" className="axr-link" onClick={reenviar} disabled={ocupado}>Reenviar código</button>}
+          <button type="button" className="axr-link" onClick={cerrar} disabled={ocupado}>Cambiar correo</button>
+        </div>
+
+        {MODO_DEMO && <p className="axr-demo">Modo demostración: usa el código <b className="ax-num">{CODIGO_DEMO}</b>.</p>}
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 /* ======================= PÁGINA ======================= */
 export default function Registro() {
   const { surfaceRef, stageRef } = useSceneTilt(10);
@@ -182,6 +354,9 @@ export default function Registro() {
   const [done, setDone] = useState(false);
   const [caps, setCaps] = useState(false);
   const [sug, setSug] = useState('');
+  const [verif, setVerif] = useState(false);
+  const [via, setVia] = useState('correo');
+  const submitRef = useRef(null);
 
   const cardId = useMemo(() => `AR ${String(Math.floor(Math.random() * 9000) + 1000)} ${String(Math.floor(Math.random() * 9000) + 1000)}`, []);
   const esUsuario = data.tipo === 'usuario';
@@ -226,6 +401,7 @@ export default function Registro() {
       const u = await registrarConGoogle(data.tipo);
       await crearCuenta({ tipo: data.tipo, via: 'google', ...u });
       setData((d) => ({ ...d, nombre: u.nombre, correo: u.correo }));
+      setVia('google');
       setDone(true);
     } catch {
       setFormError('No pudimos conectar con Google. Inténtalo de nuevo o usa tu correo.');
@@ -242,7 +418,7 @@ export default function Registro() {
     try {
       await crearCuenta(data);
       setFlip(false);
-      setDone(true);
+      setVerif(true); // correo manual: pide el código de verificación (Google no pasa por aquí)
     } catch {
       setFormError('No pudimos crear tu cuenta. Revisa tu conexión e inténtalo de nuevo.');
     } finally { setLoading(null); }
@@ -308,7 +484,6 @@ export default function Registro() {
 
                     <Field id={id('nombre')} name="nombre" label="Nombre completo" icon={User} autoComplete="name" autoFocus
                       value={data.nombre} onChange={onChange('nombre')} onBlur={onBlur('nombre')} error={errors.nombre} />
-
                     <div className={cx('axr-collapse', !esUsuario && 'is-open')}>
                       <div>
                         <Field id={id('negocio')} name="negocio" label="Nombre del negocio" icon={Storefront} autoComplete="organization"
@@ -323,7 +498,6 @@ export default function Registro() {
                           <button type="button" className="axr-sug" onClick={() => { setData((d) => ({ ...d, correo: sug })); setSug(''); setErrors((er) => ({ ...er, correo: '' })); }}>{sug}</button>?
                         </p>
                       ) : null} />
-
                     <Field id={id('password')} name="password" label="Contraseña" icon={Lock} type={showPass ? 'text' : 'password'} autoComplete="new-password"
                       value={data.password} onChange={onChange('password')} onFocus={() => setFlip(true)} onBlur={onBlur('password')} onKeyDown={capsCheck} onKeyUp={capsCheck}
                       error={errors.password}
@@ -347,7 +521,7 @@ export default function Registro() {
                       <span>{data.password ? `Seguridad: ${ETQ[fz]}` : 'Más larga y variada es más segura.'}</span>
                     </div>
 
-                    <button type="submit" className="axr-btn" disabled={loading !== null} aria-busy={loading === 'submit'}>
+                    <button ref={submitRef} type="submit" className="axr-btn" disabled={loading !== null} aria-busy={loading === 'submit'}>
                       {loading === 'submit'
                         ? <><CircleNotch className="axr-spin" size={20} weight="bold" aria-hidden="true" />Creando cuenta…</>
                         : <>{COPY[data.tipo].cta}<ArrowRight size={20} weight="bold" aria-hidden="true" /></>}
@@ -363,7 +537,7 @@ export default function Registro() {
                       <svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" /><path d="M24 41 l12 12 l21 -25" /></svg>
                     </div>
                     <h2 className="axr-form-t" ref={headRef} tabIndex={-1}>¡Bienvenido a la red, {data.nombre.trim().split(' ')[0]}!</h2>
-                    <p className="axr-form-s">Tu cuenta quedó creada. Te enviamos un correo a <b>{data.correo}</b> para confirmarla. {COPY[data.tipo].listo}</p>
+                    <p className="axr-form-s">{via === 'google' ? 'Tu cuenta quedó creada con Google.' : <>Verificamos <b>{data.correo}</b> y tu cuenta ya está activa.</>} {COPY[data.tipo].listo}</p>
                     <div className="axr-actions axr-actions-col">
                       <Link to="/" className="axr-btn">Ir al inicio<ArrowRight size={20} weight="bold" aria-hidden="true" /></Link>
                       <Link to="/acerca" className="axr-btn axr-btn-ghost">Conocer AutoRed</Link>
@@ -416,6 +590,8 @@ export default function Registro() {
       </main>
 
       <Footer />
+
+      {verif && <VerifyModal correo={data.correo} returnRef={submitRef} onClose={() => setVerif(false)} onVerified={() => { setVerif(false); setVia('correo'); setDone(true); }} />}
     </div>
   );
 }
