@@ -43,7 +43,7 @@ async function iniciarSesion({ correo, password }) {
 }
 async function iniciarConGoogle() {
   await wait(900);
-  return { nombre: 'Carlos Ramírez', correo: 'carlos.ramirez@gmail.com', rol: 'comprador' };
+  return { Nombre: 'Carlos Ramírez', Correo: 'carlos.ramirez@gmail.com', rol: 'comprador' };
 }
 
 // ---- Recuperar contraseña (simulación; sustituye por tu API) ----
