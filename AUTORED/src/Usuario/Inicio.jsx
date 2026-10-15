@@ -12,6 +12,7 @@ import { Badge, Reveal } from '../autored-ui';
 import Nav from '../Components/Nav';
 import Footer from '../Components/Footer';
 import '../index.css';
+import ChatBot from '../Components/ChatBot';
 import {
   Car, Plus, MagnifyingGlass, ClockCounterClockwise, FileText, Storefront, WhatsappLogo, CaretDown, CaretLeft,
   CaretRight, X, ArrowRight, Wrench, Check, WarningCircle, ArrowClockwise, Trash, Gear, Lightning,
@@ -730,6 +731,7 @@ export default function InicioUsuario({ usuario }) {
           </div>
         </section>
       </main>
+      <ChatBot />
 
       <Footer />
 

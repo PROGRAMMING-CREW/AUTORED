@@ -11,6 +11,7 @@ import Nav from '../Components/Nav';
 import Footer from '../Components/Footer';
 import '../index.css';
 import './Catalogo.css';
+import ChatBot from '../Components/ChatBot';
 import {
   MagnifyingGlass, X, Funnel, MapPin, NavigationArrow, WhatsappLogo, Scales, CheckCircle, CircleNotch,
   ArrowCounterClockwise, Engine, Lightning, Gear, ArrowsVertical, Disc, Package, Check, WarningCircle, Robot,
@@ -729,7 +730,7 @@ export default function Catalogo({ rol, usuario, onSalir }) {
           </div>
         </div>
       </dialog>
-
+      <ChatBot />
       <Footer />
     </div>
   );
