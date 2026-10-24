@@ -11,10 +11,11 @@ import { Link, useSearchParams } from 'react-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Badge, Reveal } from '../autored-ui';
-import Nav from '../Components/Nav';
+import Nav from '../Components/NavUsuario';
 import Footer from '../Components/Footer';
 import '../index.css';
 import './Sucursales.css';
+import ChatBot from '../Components/ChatBot';
 import {
   MapPin, NavigationArrow, Crosshair, WhatsappLogo, Phone, Clock, CircleNotch, WarningCircle, CheckCircle, X,
   ArrowRight, Storefront, MapTrifold, ListBullets, CaretDown, Lightning,
@@ -521,6 +522,7 @@ export default function Sucursales() {
           </div>
         </section>
       </main>
+    <ChatBot />
 
       <Footer />
     </div>

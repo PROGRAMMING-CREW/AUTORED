@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { Badge, Reveal } from '../autored-ui';
-import Nav from '../Components/Nav';
+import Nav from '../Components/NavUsuario';
 import Footer from '../Components/Footer';
 import '../index.css';
 import './Catalogo.css';
