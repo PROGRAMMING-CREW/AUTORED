@@ -1,101 +1,30 @@
 // Catálogo de refacciones — AutoRed. Ubicación: src/Catalogo/Catalogo.jsx
 // Mismos estilos ax- (index.css) que Index, Registro y Login; lo propio lleva prefijo axc- en ./Catalogo.css.
 //
-// Ruta:  <Route path="/catalogo" element={<Catalogo rol="comprador" usuario={usuario} onSalir={cerrarSesion} />} />
+// Datos en ./datos.js e ilustraciones en ./piezas.jsx (los comparte con DetalleProducto.jsx).
 // Los filtros viven en la URL (?q=balatas&cat=frenos&min=200&max=900&km=15), así que se pueden
 // compartir, y el botón "atrás" del navegador funciona.
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Badge, Reveal } from '../autored-ui';
 import Nav from '../Components/NavUsuario';
 import Footer from '../Components/Footer';
 import '../index.css';
 import './Catalogo.css';
-import ChatBot from '../Components/ChatBot';
 import {
-  MagnifyingGlass, X, Funnel, MapPin, NavigationArrow, WhatsappLogo, Scales, CheckCircle, CircleNotch,
-  ArrowCounterClockwise, Engine, Lightning, Gear, ArrowsVertical, Disc, Package, Check, WarningCircle, Robot,
+  CATEGORIAS, CAT, SUCURSALES, PRODUCTOS, MARCAS, REFERENCIA, PMIN, PMAX, PSTEP, KMAX, NB, ORDENES,
+  reduced, finePointer, norm, toks, dinero, clamp, num, csv, kmTxt, useUbicacion,
+} from './datos';
+import { Defs, Pieza, useSceneTilt } from './piezas';
+import {
+  MagnifyingGlass, X, Funnel, MapPin, NavigationArrow, WhatsappLogo, Scales, CircleNotch,
+  ArrowCounterClockwise, Package, Robot,
 } from '@phosphor-icons/react';
 
 const cx = (...c) => c.filter(Boolean).join(' ');
 const W = 'duotone';
-const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const finePointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-/* ======================= DATOS DE MUESTRA (sustituye por tu API) ======================= */
-// TODO: carga estos datos desde tu backend (PHP/MySQL). Cada producto trae sus existencias por sucursal (st).
-const CATEGORIAS = [
-  { id: 'frenos', t: 'Frenos', icon: Disc },
-  { id: 'motor', t: 'Motor', icon: Engine },
-  { id: 'encendido', t: 'Encendido', icon: Lightning },
-  { id: 'filtros', t: 'Filtros', icon: Funnel },
-  { id: 'transmision', t: 'Transmisión', icon: Gear },
-  { id: 'suspension', t: 'Suspensión', icon: ArrowsVertical },
-];
-const CAT = Object.fromEntries(CATEGORIAS.map((c) => [c.id, c]));
-
-// Coordenadas aproximadas de muestra. Referencia por defecto: Cd. Nezahualcóyotl (cámbiala si quieres).
-const REFERENCIA = { lat: 19.4046, lng: -99.0136, nombre: 'Cd. Nezahualcóyotl' };
-const SUCURSALES = [
-  { id: 'neza', n: 'AutoRed Neza Centro', lat: 19.4006, lng: -99.0148, tel: '5215500000001' },
-  { id: 'chim', n: 'AutoRed Chimalhuacán', lat: 19.4217, lng: -98.9456, tel: '5215500000002' },
-  { id: 'izta', n: 'AutoRed Iztapalapa', lat: 19.3574, lng: -99.0926, tel: '5215500000003' },
-  { id: 'tex', n: 'AutoRed Texcoco', lat: 19.5172, lng: -98.8829, tel: '5215500000004' },
-  { id: 'ecat', n: 'AutoRed Ecatepec', lat: 19.601, lng: -99.051, tel: '5215500000005' },
-];
-
-const P = (id, nombre, cat, marca, fab, precio, compat, st) => ({ id, nombre, sku: id.toUpperCase(), cat, marca, fab, precio, compat, st });
-const PRODUCTOS = [
-  P('br-20418', 'Balatas cerámicas delanteras', 'frenos', 'Torque', 'Frenotec', 849, ['Versa 2018', 'March 2017', 'Sentra 2016'], { neza: 12, chim: 0, izta: 7, tex: 0, ecat: 4 }),
-  P('br-20990', 'Balatas semimetálicas delanteras', 'frenos', 'Vortex', 'Frenotec', 690, ['Versa 2018', 'Aveo 2016'], { neza: 2, chim: 5, izta: 0, tex: 3, ecat: 0 }),
-  P('dv-31002', 'Disco de freno ventilado', 'frenos', 'Delta', 'Frenotec', 1120, ['Versa 2018', 'Tsuru 2015'], { neza: 0, chim: 0, izta: 0, tex: 0, ecat: 2 }),
-  P('mo-11540', 'Juego de pistones STD', 'motor', 'Nova', 'Motormax', 2340, ['Aveo 2016', 'Chevy 2012'], { neza: 0, chim: 3, izta: 1, tex: 0, ecat: 0 }),
-  P('mo-11877', 'Banda de distribución', 'motor', 'Torque', 'Motormax', 560, ['Versa 2018', 'Aveo 2016', 'Chevy 2012'], { neza: 8, chim: 6, izta: 0, tex: 0, ecat: 3 }),
-  P('mo-12003', 'Bomba de aceite', 'motor', 'Delta', 'Motormax', 1480, ['Sentra 2016', 'Tsuru 2015'], { neza: 0, chim: 0, izta: 4, tex: 0, ecat: 0 }),
-  P('en-40111', 'Bujías de iridio (4 piezas)', 'encendido', 'Vortex', 'Ignix', 620, ['Versa 2018', 'March 2017', 'Aveo 2016'], { neza: 20, chim: 9, izta: 5, tex: 2, ecat: 7 }),
-  P('en-40230', 'Bobina de encendido', 'encendido', 'Nova', 'Ignix', 780, ['Versa 2018', 'Sentra 2016'], { neza: 3, chim: 0, izta: 0, tex: 0, ecat: 0 }),
-  P('en-40377', 'Cables de bujía', 'encendido', 'Torque', 'Ignix', 340, ['Tsuru 2015', 'Chevy 2012'], { neza: 0, chim: 2, izta: 6, tex: 4, ecat: 0 }),
-  P('fi-10231', 'Filtro de aceite', 'filtros', 'Delta', 'Filtrex', 189, ['Versa 2018', 'March 2017', 'Aveo 2016', 'Tsuru 2015'], { neza: 30, chim: 12, izta: 9, tex: 5, ecat: 14 }),
-  P('fi-10388', 'Filtro de aire', 'filtros', 'Vortex', 'Filtrex', 245, ['Versa 2018', 'Sentra 2016'], { neza: 6, chim: 0, izta: 3, tex: 0, ecat: 0 }),
-  P('fi-10499', 'Filtro de gasolina', 'filtros', 'Nova', 'Filtrex', 310, ['Aveo 2016', 'Chevy 2012'], { neza: 0, chim: 0, izta: 0, tex: 1, ecat: 0 }),
-  P('tr-50120', 'Kit de clutch completo', 'transmision', 'Torque', 'Transdrive', 2150, ['Versa 2018', 'March 2017'], { neza: 2, chim: 0, izta: 0, tex: 0, ecat: 1 }),
-  P('tr-50288', 'Disco de clutch', 'transmision', 'Delta', 'Transdrive', 980, ['Aveo 2016', 'Tsuru 2015'], { neza: 0, chim: 4, izta: 2, tex: 0, ecat: 0 }),
-  P('su-60105', 'Amortiguador delantero', 'suspension', 'Vortex', 'Suspro', 1260, ['Versa 2018', 'Sentra 2016'], { neza: 5, chim: 0, izta: 0, tex: 3, ecat: 0 }),
-  P('su-60244', 'Rótula superior', 'suspension', 'Nova', 'Suspro', 410, ['Aveo 2016', 'Tsuru 2015', 'Chevy 2012'], { neza: 0, chim: 7, izta: 0, tex: 0, ecat: 5 }),
-  P('su-60390', 'Resorte helicoidal', 'suspension', 'Torque', 'Suspro', 870, ['Versa 2018', 'March 2017'], { neza: 0, chim: 0, izta: 0, tex: 0, ecat: 0 }),
-];
-const MARCAS = [...new Set(PRODUCTOS.map((p) => p.marca))].sort();
-
-const PMIN = 0;
-const PMAX = Math.ceil(Math.max(...PRODUCTOS.map((p) => p.precio)) / 100) * 100;
-const PSTEP = 10;
-const KMAX = 50; // 50 km = "sin límite"
-const NB = 10;   // barras del histograma
-const ORDENES = [
-  { id: 'relevancia', t: 'Relevancia' },
-  { id: 'cercano', t: 'Más cercano' },
-  { id: 'precio-asc', t: 'Precio: menor a mayor' },
-  { id: 'precio-desc', t: 'Precio: mayor a menor' },
-  { id: 'nombre', t: 'Nombre A–Z' },
-];
 const EJEMPLOS = ['Balatas', 'Filtro de aceite', 'Bujías', 'Versa 2018'];
-
-/* ======================= UTILIDADES ======================= */
-const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-const toks = (q) => norm(q).split(/\s+/).filter(Boolean);
-const dinero = (n) => `$${n.toLocaleString('es-MX')}`;
-const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const num = (v, d) => { const n = Number(v); return v !== null && v !== '' && Number.isFinite(n) ? n : d; };
-const csv = (v) => (v ? v.split(',').filter(Boolean) : []);
-const kmTxt = (km) => (km < 10 ? km.toFixed(1) : Math.round(km));
-
-// Distancia entre dos coordenadas (fórmula de Haversine), en km
-function distanciaKm(a, b) {
-  const R = 6371, rad = (x) => (x * Math.PI) / 180;
-  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
 
 const INDICE = Object.fromEntries(PRODUCTOS.map((p) => [p.id, norm([p.nombre, p.sku, p.marca, p.fab, CAT[p.cat].t, ...p.compat].join(' '))]));
 const coincide = (p, q) => toks(q).every((t) => INDICE[p.id].includes(t));
@@ -162,29 +91,6 @@ function aplica(f, p, dist, omit) {
 }
 
 /* ======================= HOOKS ======================= */
-// Inclinación 3D de la escena del hero (decorativa; solo puntero fino)
-function useSceneTilt(max = 8) {
-  const surfaceRef = useRef(null);
-  const stageRef = useRef(null);
-  useEffect(() => {
-    const surface = surfaceRef.current, stage = stageRef.current;
-    if (!surface || !stage || reduced() || !finePointer()) return;
-    let tx = 0, ty = 0, px = 0, py = 0, raf = 0;
-    const tick = () => {
-      px += (tx - px) * 0.08; py += (ty - py) * 0.08;
-      stage.style.transform = `rotateX(${-py * max}deg) rotateY(${px * max}deg)`;
-      raf = Math.abs(tx - px) > 0.001 || Math.abs(ty - py) > 0.001 ? requestAnimationFrame(tick) : 0;
-    };
-    const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
-    const move = (e) => { const r = surface.getBoundingClientRect(); tx = ((e.clientX - r.left) / r.width - 0.5) * 2; ty = ((e.clientY - r.top) / r.height - 0.5) * 2; kick(); };
-    const leave = () => { tx = 0; ty = 0; kick(); };
-    surface.addEventListener('pointermove', move);
-    surface.addEventListener('pointerleave', leave);
-    return () => { surface.removeEventListener('pointermove', move); surface.removeEventListener('pointerleave', leave); cancelAnimationFrame(raf); };
-  }, [max]);
-  return { surfaceRef, stageRef };
-}
-
 // Tarjeta con inclinación suave y foco de luz que sigue al cursor
 function Tilt({ className, children, max = 5, ...props }) {
   const ref = useRef(null);
@@ -211,120 +117,6 @@ function Tilt({ className, children, max = 5, ...props }) {
     return () => { el.removeEventListener('pointermove', move); el.removeEventListener('pointerleave', leave); cancelAnimationFrame(raf); };
   }, [max]);
   return <div ref={ref} className={cx('axc-tilt', className)} {...props}>{children}</div>;
-}
-
-/* ======================= ILUSTRACIONES (SVG propio) ======================= */
-function gearPath(teeth, ro, ri, c = 100) {
-  const step = (Math.PI * 2) / teeth;
-  let d = '';
-  for (let i = 0; i < teeth; i++) {
-    const a = i * step;
-    const pts = [[a - step * 0.32, ri], [a - step * 0.17, ro], [a + step * 0.17, ro], [a + step * 0.32, ri]]
-      .map(([t, r]) => `${(c + Math.cos(t) * r).toFixed(2)} ${(c + Math.sin(t) * r).toFixed(2)}`);
-    d += `${i === 0 ? 'M' : 'L'}${pts[0]} L${pts[1]} L${pts[2]} L${pts[3]} `;
-  }
-  return `${d}Z`;
-}
-const ring = (n, r, c = 100) => Array.from({ length: n }, (_, i) => { const a = (i / n) * Math.PI * 2; return [c + Math.cos(a) * r, c + Math.sin(a) * r]; });
-const resorte = (() => { let d = 'M60 46'; for (let i = 0; i < 9; i++) d += ` L${i % 2 ? 28 : 92} ${52 + i * 11}`; return `${d} L60 150`; })();
-
-// Los degradados se declaran UNA vez para toda la página (evita ids repetidos en cada tarjeta)
-function Defs() {
-  return (
-    <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
-      <defs>
-        <radialGradient id="cg-disc" cx="40%" cy="35%" r="75%"><stop offset="0" stopColor="#9a8486" /><stop offset=".6" stopColor="#4a3638" /><stop offset="1" stopColor="#2a1618" /></radialGradient>
-        <linearGradient id="cg-cal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ff5a4f" /><stop offset="1" stopColor="#9b111e" /></linearGradient>
-        <linearGradient id="cg-gear" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ff8d85" /><stop offset="1" stopColor="#9b111e" /></linearGradient>
-        <linearGradient id="cg-pis" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#6b5456" /><stop offset=".5" stopColor="#e3d2d3" /><stop offset="1" stopColor="#6b5456" /></linearGradient>
-        <linearGradient id="cg-cer" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#c9b4b6" /><stop offset=".5" stopColor="#fff1f0" /><stop offset="1" stopColor="#c9b4b6" /></linearGradient>
-        <linearGradient id="cg-can" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor="#9b111e" /><stop offset=".45" stopColor="#ff5a4f" /><stop offset="1" stopColor="#7a0f1b" /></linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-// Una pieza por categoría. Las clases axc-spin / axc-pump / axc-spark / axc-drop / axc-comp
-// solo se animan al pasar el cursor por la tarjeta (o siempre dentro de .axc-on, en el hero).
-function Pieza({ cat }) {
-  switch (cat) {
-    case 'frenos':
-      return (
-        <svg viewBox="0 0 200 200">
-          <g className="axc-spin">
-            <circle cx="100" cy="100" r="96" fill="url(#cg-disc)" stroke="#ffc2bc" strokeOpacity=".35" />
-            {ring(14, 66).map(([x, y], i) => <circle key={i} cx={x} cy={y} r="5.5" fill="#120a0b" />)}
-            <circle cx="100" cy="100" r="40" fill="#5b4244" stroke="#ffc2bc" strokeOpacity=".3" />
-            {ring(5, 26).map(([x, y], i) => <circle key={i} cx={x} cy={y} r="3.6" fill="#120a0b" />)}
-            <circle cx="100" cy="100" r="11" fill="#120a0b" />
-            <circle cx="100" cy="13" r="4" fill="#ff5a4f" />
-          </g>
-          <path d="M142 46 L176 68 Q182 100 176 132 L142 154 Q150 100 142 46Z" fill="url(#cg-cal)" />
-        </svg>
-      );
-    case 'motor':
-      return (
-        <svg viewBox="0 0 120 215">
-          <g className="axc-pump">
-            <rect x="16" y="12" width="88" height="96" rx="12" fill="url(#cg-pis)" stroke="#fff1f0" strokeOpacity=".35" />
-            {[28, 40, 52].map((y) => <rect key={y} x="16" y={y} width="88" height="4" fill="#120a0b" opacity=".75" />)}
-            <circle cx="60" cy="86" r="11" fill="#120a0b" stroke="#ff8d85" strokeWidth="2" />
-            <path d="M52 96 L50 182 L70 182 L68 96Z" fill="#a89092" />
-            <circle cx="60" cy="192" r="15" fill="#c81e2b" stroke="#fff1f0" strokeOpacity=".4" />
-            <circle cx="60" cy="192" r="6" fill="#120a0b" />
-          </g>
-        </svg>
-      );
-    case 'encendido':
-      return (
-        <svg viewBox="0 0 80 215">
-          <rect x="32" y="4" width="16" height="12" rx="3" fill="#c81e2b" />
-          <rect x="24" y="14" width="32" height="76" rx="8" fill="url(#cg-cer)" stroke="#fff1f0" strokeOpacity=".35" />
-          {[34, 48, 62].map((y) => <rect key={y} x="24" y={y} width="32" height="3" fill="#c81e2b" opacity=".55" />)}
-          <rect x="16" y="90" width="48" height="26" rx="4" fill="#4a3638" stroke="#ffc2bc" strokeOpacity=".3" />
-          <rect x="26" y="116" width="28" height="52" fill="#8d7b7d" />
-          {[124, 132, 140, 148, 156].map((y) => <rect key={y} x="26" y={y} width="28" height="2" fill="#2a1618" opacity=".6" />)}
-          <path d="M40 168 V182 H56 V174" stroke="#e3d2d3" strokeWidth="3" fill="none" strokeLinejoin="round" />
-          <g className="axc-spark">
-            <circle cx="52" cy="186" r="13" fill="#ff5a4f" opacity=".35" />
-            <path d="M52 180 l-6 12 l8 -3 l-6 14" stroke="#fff1f0" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          </g>
-        </svg>
-      );
-    case 'filtros':
-      return (
-        <svg viewBox="0 0 120 175">
-          <rect x="30" y="8" width="60" height="22" rx="5" fill="#4a3638" stroke="#ffc2bc" strokeOpacity=".3" />
-          <path d="M18 38 q0 -8 12 -8 h60 q12 0 12 8 v108 q0 12 -12 12 h-60 q-12 0 -12 -12z" fill="url(#cg-can)" stroke="#fff1f0" strokeOpacity=".35" />
-          <rect x="18" y="72" width="84" height="38" fill="#fff1f0" opacity=".93" />
-          <rect x="30" y="84" width="34" height="6" rx="3" fill="#c81e2b" />
-          <rect x="30" y="95" width="52" height="5" rx="2.5" fill="#4a3638" opacity=".5" />
-          {[48, 56].map((y) => <rect key={y} x="18" y={y} width="84" height="2" fill="#120a0b" opacity=".35" />)}
-          <circle className="axc-drop" cx="60" cy="166" r="4.5" fill="#ff8d85" />
-        </svg>
-      );
-    case 'transmision':
-      return (
-        <svg viewBox="0 0 200 200">
-          <g className="axc-spin">
-            <path d={gearPath(12, 96, 76)} fill="url(#cg-gear)" stroke="#fff1f0" strokeOpacity=".4" />
-            <circle cx="100" cy="100" r="56" fill="none" stroke="#fff1f0" strokeOpacity=".35" />
-            {ring(6, 40).map(([x, y], i) => <line key={i} x1="100" y1="100" x2={x} y2={y} stroke="#fff1f0" strokeOpacity=".3" strokeWidth="3" />)}
-            <circle cx="100" cy="100" r="22" fill="#120a0b" stroke="#ffc2bc" strokeOpacity=".5" />
-          </g>
-        </svg>
-      );
-    default: // suspensión
-      return (
-        <svg viewBox="0 0 120 200">
-          <rect x="38" y="6" width="44" height="14" rx="4" fill="#4a3638" stroke="#ffc2bc" strokeOpacity=".3" />
-          <rect x="54" y="20" width="12" height="28" fill="#c9b4b6" />
-          <g className="axc-comp"><path d={resorte} stroke="#ff8d85" strokeWidth="7" fill="none" strokeLinejoin="round" strokeLinecap="round" /></g>
-          <rect x="40" y="148" width="40" height="44" rx="6" fill="url(#cg-pis)" stroke="#fff1f0" strokeOpacity=".35" />
-          <rect x="40" y="160" width="40" height="4" fill="#c81e2b" />
-        </svg>
-      );
-  }
 }
 
 /* ======================= PIEZAS DE INTERFAZ ======================= */
@@ -460,7 +252,7 @@ function Panel({ idp, f, set, limpiar, conteo, hist, dist, ubic, pedirUbic, nAct
   );
 }
 
-function Tarjeta({ p, q, info, sinFiltroSuc, comp, onComp, i }) {
+function Tarjeta({ p, q, info, sinFiltroSuc, comp, onComp, i, desde }) {
   const sin = !info;
   const bajo = info && info.qty <= 3;
   const tone = sin ? 'danger' : bajo ? 'warn' : 'ok';
@@ -479,7 +271,7 @@ function Tarjeta({ p, q, info, sinFiltroSuc, comp, onComp, i }) {
           <div className="axc-pic"><Pieza cat={p.cat} /></div>
         </div>
         <div className="axc-body">
-          <h3 className="axc-name"><Resaltar texto={p.nombre} q={q} /></h3>
+          <h3 className="axc-name"><Link to={`/producto/${p.id}`} state={{ desde }}><Resaltar texto={p.nombre} q={q} /></Link></h3>
           <p className="axc-sku">SKU {p.sku} · {p.marca} · {p.fab}</p>
           <p className="axc-compat">{p.compat.slice(0, 3).join(' · ')}</p>
           <div className="axc-priceRow">
@@ -506,6 +298,7 @@ function Tarjeta({ p, q, info, sinFiltroSuc, comp, onComp, i }) {
 /* ======================= PÁGINA ======================= */
 export default function Catalogo({ rol, usuario, onSalir }) {
   const ir = useNavigate();
+  const { search } = useLocation();
   const { f, set, limpiar } = useFiltros();
   const { surfaceRef, stageRef } = useSceneTilt(8);
   const uid = useId().replace(/:/g, '');
@@ -513,7 +306,7 @@ export default function Catalogo({ rol, usuario, onSalir }) {
   const sheet = useRef(null);
   const trayRef = useRef(null);
   const [qLocal, setQLocal] = useState(f.q);
-  const [ubic, setUbic] = useState({ lat: REFERENCIA.lat, lng: REFERENCIA.lng, fuente: 'ref', estado: 'idle', msg: '' });
+  const { ubic, dist, pedirUbic } = useUbicacion(); // misma ubicación que el detalle de producto
   const [comp, setComp] = useState([]);
   const [avisoComp, setAvisoComp] = useState('');
 
@@ -546,18 +339,6 @@ export default function Catalogo({ rol, usuario, onSalir }) {
     mq.addEventListener('change', c);
     return () => mq.removeEventListener('change', c);
   }, []);
-
-  const dist = useMemo(() => Object.fromEntries(SUCURSALES.map((b) => [b.id, distanciaKm(ubic, b)])), [ubic.lat, ubic.lng]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const pedirUbic = () => {
-    if (!navigator.geolocation) { setUbic((u) => ({ ...u, estado: 'error', msg: 'Tu navegador no permite ubicarte. Usamos la referencia.' })); return; }
-    setUbic((u) => ({ ...u, estado: 'buscando' }));
-    navigator.geolocation.getCurrentPosition(
-      (pos) => setUbic({ lat: pos.coords.latitude, lng: pos.coords.longitude, fuente: 'gps', estado: 'idle', msg: '' }),
-      (err) => setUbic((u) => ({ ...u, estado: 'error', msg: err.code === 1 ? 'No diste permiso de ubicación. Usamos la referencia; puedes elegir sucursales a mano.' : 'No pudimos obtener tu ubicación. Usamos la referencia.' })),
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 },
-    );
-  };
 
   // Resultados, conteos por faceta e histograma de precios
   const { lista, conteo, hist, total } = useMemo(() => {
@@ -680,7 +461,7 @@ export default function Catalogo({ rol, usuario, onSalir }) {
               {total > 0 ? (
                 <ul className="axc-grid">
                   {lista.map(({ p, info }, i) => (
-                    <Tarjeta key={p.id} p={p} q={f.q} info={info} sinFiltroSuc={!sucActivo(f)} comp={comp.includes(p.id)} onComp={onComp} i={i} />
+                    <Tarjeta key={p.id} p={p} q={f.q} info={info} sinFiltroSuc={!sucActivo(f)} comp={comp.includes(p.id)} onComp={onComp} i={i} desde={search} />
                   ))}
                 </ul>
               ) : (
@@ -730,7 +511,7 @@ export default function Catalogo({ rol, usuario, onSalir }) {
           </div>
         </div>
       </dialog>
-      <ChatBot />
+
       <Footer />
     </div>
   );

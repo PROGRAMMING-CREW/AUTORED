@@ -178,6 +178,13 @@
 .axc-cmp.on { background: #fff1f0; color: var(--ax-rust); }
 .axc-body { display: flex; flex: 1; flex-direction: column; gap: 0.3rem; padding: 1rem 1.1rem 1.2rem; }
 .axc-name { font-family: var(--ax-display); font-weight: 700; font-size: 1.14rem; line-height: 1.2; letter-spacing: -0.015em; color: var(--ax-ink); }
+.axc-name a { color: inherit; text-decoration: none; }
+.axc-name a::after { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; }
+.axc-name a:focus-visible { outline: none; }
+.axc-name a:focus-visible::after { outline: 3px solid var(--ax-ember-d); outline-offset: -3px; border-radius: 1.4rem; }
+.axc-cmp, .axc-wa { position: relative; z-index: 2; }
+.axc-cmp { position: absolute; }
+@media (hover: hover) and (pointer: fine) { .axc-name a:hover { text-decoration: underline; text-underline-offset: 3px; } }
 .axc-name mark { padding: 0 0.1em; border-radius: 3px; background: #ffd9d5; color: inherit; }
 .axc-sku { margin: 0; font-size: 0.78rem; color: #5a564f; font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; }
 .axc-compat { margin: 0; font-size: 0.85rem; color: var(--ax-ink2); }
