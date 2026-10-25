@@ -1,5 +1,5 @@
 // Mi perfil — AutoRed (SOLO VISTA: aún no hay backend). Ubicación: src/Usuario/Perfil.jsx (+ Perfil.css en la misma carpeta).
-// Reutiliza los estilos ax- (index.css) y los del formulario/credencial de Registro (axr-). Lo propio lleva prefijo axp-.
+// Reutiliza los estilos ax- (index.css) y los del formulario de Registro (axr-). Lo propio lleva prefijo axp-.
 //
 // Ruta:  { path: "/perfil", element: <Perfil /> }
 // Datos editables: nombre, apellidos, fecha de nacimiento, teléfono, correo, contraseña actual y nueva.
@@ -11,21 +11,12 @@ import '../index.css';
 import './Perfil.css';
 import {
   User, IdentificationCard, CalendarBlank, Phone, Envelope, Lock, LockKey, Eye, EyeSlash, Check, CheckCircle,
-  WarningCircle, CircleNotch, Gear, ShieldCheck, ArrowRight,
+  WarningCircle, CircleNotch, ArrowRight,
 } from '@phosphor-icons/react';
 
 const cx = (...c) => c.filter(Boolean).join(' ');
 const W = 'duotone';
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const finePointer = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-/* ======================= BACKEND (sustituye por el tuyo) ======================= */
-// TODO: conecta con tu API (PHP/MySQL), con la sesión por cookie httpOnly.
-//   · GET   /perfil                       → datos iniciales del usuario en sesión
-//   · PATCH /perfil                       → guarda { nombre, apellidos, nacimiento, telefono, correo }
-//   · POST  /perfil/password              → { actual, nueva }  (el servidor verifica la actual y guarda el hash de la nueva)
-//   · Si cambia el correo, el servidor debe enviar un código a la dirección nueva y confirmarla antes de usarla.
-// Simulación: la contraseña actual "incorrecta" devuelve error; cualquier otra se acepta.
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const PERFIL_INICIAL = { nombre: 'Carlos', apellidos: 'Ramírez López', nacimiento: '1995-04-12', telefono: '55 1234 5678', correo: 'carlos.ramirez@correo.com' };
 async function guardarPerfil(/* datos */) { await wait(900); return { ok: true }; }
@@ -61,34 +52,6 @@ const reglas = {
 const CAMPOS = ['nombre', 'apellidos', 'nacimiento', 'telefono', 'correo'];
 const ETIQUETA = { nombre: 'Nombre', apellidos: 'Apellidos', nacimiento: 'Fecha de nacimiento', telefono: 'Teléfono', correo: 'Correo electrónico' };
 const limpio = (d) => JSON.stringify(CAMPOS.map((k) => String(d[k]).trim()));
-
-/* ======================= HOOK: inclinación 3D de la escena ======================= */
-function useSceneTilt(max = 10) {
-  const surfaceRef = useRef(null);
-  const stageRef = useRef(null);
-  useEffect(() => {
-    const surface = surfaceRef.current, stage = stageRef.current;
-    if (!surface || !stage || reduced() || !finePointer()) return;
-    let tx = 0, ty = 0, px = 0, py = 0, raf = 0;
-    const tick = () => {
-      px += (tx - px) * 0.08; py += (ty - py) * 0.08;
-      stage.style.transform = `rotateX(${-py * max}deg) rotateY(${px * max}deg)`;
-      raf = Math.abs(tx - px) > 0.001 || Math.abs(ty - py) > 0.001 ? requestAnimationFrame(tick) : 0;
-    };
-    const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
-    const move = (e) => {
-      const r = surface.getBoundingClientRect();
-      tx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-      ty = ((e.clientY - r.top) / r.height - 0.5) * 2;
-      kick();
-    };
-    const leave = () => { tx = 0; ty = 0; kick(); };
-    surface.addEventListener('pointermove', move);
-    surface.addEventListener('pointerleave', leave);
-    return () => { surface.removeEventListener('pointermove', move); surface.removeEventListener('pointerleave', leave); cancelAnimationFrame(raf); };
-  }, [max]);
-  return { surfaceRef, stageRef };
-}
 
 /* ======================= PIEZAS ======================= */
 function Words({ text, em = false, base = 0 }) {
@@ -163,7 +126,6 @@ function Anillo({ pct }) {
 export default function Perfil() {
   const uid = useId().replace(/:/g, '');
   const id = (k) => `${uid}-${k}`;
-  const { surfaceRef, stageRef } = useSceneTilt(10);
   const formRef = useRef(null);
   const pwRef = useRef(null);
   const timers = useRef([]);
@@ -178,7 +140,6 @@ export default function Perfil() {
   const [flash, setFlash] = useState([]); // campos recién guardados
   const [sug, setSug] = useState('');
   const [toast, setToast] = useState('');
-  const [sello, setSello] = useState(false);
   // contraseña
   const [pw, setPw] = useState({ actual: '', nueva: '' });
   const [errPw, setErrPw] = useState({});
@@ -190,7 +151,6 @@ export default function Perfil() {
   const [cargandoPw, setCargandoPw] = useState(false);
   const [errFormPw, setErrFormPw] = useState('');
   const [okPw, setOkPw] = useState('');
-  const [flip, setFlip] = useState(false);
 
   const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.current.push(t); };
   useEffect(() => { const ts = timers.current; return () => ts.forEach(clearTimeout); }, []);
@@ -213,7 +173,6 @@ export default function Perfil() {
   useEffect(() => { if (pwTick) pwRef.current?.querySelector('[aria-invalid="true"]')?.focus(); }, [pwTick]);
 
   const avisar = (txt) => { setToast(txt); later(() => setToast(''), 3500); };
-  const sellar = () => { setSello(true); later(() => setSello(false), 2400); };
 
   /* ---- datos personales ---- */
   const onChange = (k) => (e) => {
@@ -242,7 +201,7 @@ export default function Perfil() {
       setGuardado(limpioD); setData(limpioD);
       setFlash(cambiados); later(() => setFlash([]), 1600);
       setAviso(correoCambio ? `Guardamos tus datos. Falta confirmar ${limpioD.correo}: te enviaremos un código a esa dirección.` : 'Tus datos se guardaron correctamente.');
-      avisar('Cambios guardados'); sellar();
+      avisar('Cambios guardados');
     } catch { setErrForm('No pudimos guardar tus cambios. Revisa tu conexión e inténtalo de nuevo.'); }
     finally { setCargando(false); }
   };
@@ -266,9 +225,9 @@ export default function Perfil() {
     setCargandoPw(true); setErrFormPw(''); setOkPw('');
     try {
       await cambiarPassword(pw);
-      setPw({ actual: '', nueva: '' }); setErrPw({}); setFlip(false);
+      setPw({ actual: '', nueva: '' }); setErrPw({});
       setOkPw('Tu contraseña se actualizó correctamente.');
-      avisar('Contraseña actualizada'); sellar();
+      avisar('Contraseña actualizada');
     } catch (err) {
       if (err?.codigo === 'actual') { setErrPw({ actual: 'La contraseña actual no es correcta.' }); setPwTick((t) => t + 1); }
       else setErrFormPw('No pudimos cambiar tu contraseña. Revisa tu conexión e inténtalo de nuevo.');
@@ -277,66 +236,25 @@ export default function Perfil() {
   const capsCheck = (set) => (e) => set(!!e.getModifierState?.('CapsLock'));
 
   const irACampo = (k) => document.getElementById(id(k))?.focus();
-  const nombreCard = `${data.nombre.trim()} ${data.apellidos.trim().split(' ')[0] || ''}`.trim() || 'Tu nombre';
 
   return (
     <div className="ax">
       <NavUsuario usuario={{ nombre: guardado.nombre }} />
 
       <main>
-        {/* ===== HERO: tu credencial se actualiza mientras editas ===== */}
+        {/* ===== HERO compacto ===== */}
         <section className="ax-hero ax-dark axp-hero" aria-labelledby={id('h')}>
-          <GearBg gears={[{ n: 14, s: '38rem', l: '-12rem', t: '-8rem', dur: '120s' }, { n: 10, s: '26rem', l: '64%', t: '60%', rev: true, dur: '90s' }]} />
-          <div className="ax-wrap ax-hero-grid axp-grid">
-            <div>
+          <GearBg gears={[{ n: 14, s: '30rem', l: '-10rem', t: '-12rem', dur: '120s' }, { n: 10, s: '18rem', l: '78%', t: '-4rem', rev: true, dur: '90s' }]} />
+          <div className="ax-wrap axp-grid">
+            <div className="axp-head">
               <Reveal><Badge tone="brand">Mi cuenta</Badge></Reveal>
-              <h1 id={id('h')} className="ax-h1" style={{ marginTop: '1.25rem' }}>
+              <h1 id={id('h')} className="ax-h1 axp-h1">
                 <Words text="Tu perfil," />
                 <Words text="siempre al día." em base={2} />
               </h1>
               <Reveal delay={200}>
-                <p className="ax-lede">Cambia tus datos y tu contraseña cuando quieras. Tu credencial se actualiza al instante mientras escribes.</p>
-                <ul className="ax-checks">
-                  {['Datos personales', 'Correo y teléfono de contacto', 'Contraseña segura'].map((x) => (
-                    <li key={x}><CheckCircle size={18} weight="fill" aria-hidden="true" />{x}</li>
-                  ))}
-                </ul>
+                <p className="ax-lede axp-lede">Cambia tus datos y tu contraseña cuando quieras.</p>
               </Reveal>
-            </div>
-
-            <div ref={surfaceRef} className="ax-scene axp-scene" aria-hidden="true">
-              <div ref={stageRef} className="ax-stage">
-                <div className="ax-glow" />
-                <div className="ax-floor"><div className="ax-floor-grid" /></div>
-                <div className="axr-card">
-                  <div className="axr-float">
-                    <div className={cx('axr-card-in', flip && 'is-flip', sello && 'is-done')}>
-                      <div className="axr-face axr-front">
-                        <svg className="axr-front-bg" viewBox="0 0 200 200"><path d={gearPath(16, 96, 80)} /><circle cx="100" cy="100" r="40" /></svg>
-                        <div className="axr-card-top">
-                          <span className="axr-brand"><Gear size={22} weight="fill" />AutoRed</span>
-                          <span className="axr-tag">Usuario</span>
-                        </div>
-                        <div className="axr-chipset"><i /><i /><i /></div>
-                        <p className="axr-card-num ax-num">AR 4821 0937</p>
-                        <div className="axr-card-bot">
-                          <p className="axr-card-name">{nombreCard}</p>
-                          <p className="axr-card-city">Miembro {new Date().getFullYear()}</p>
-                        </div>
-                        <span className="axr-stamp">Guardado</span>
-                      </div>
-                      <div className="axr-face axr-back">
-                        <span className="axr-stripe" />
-                        <p className="axr-back-t">Tu contraseña se queda contigo</p>
-                        <div className="axr-sign"><span className="ax-num">{'•'.repeat(Math.min(pw.nueva.length, 18)) || '••••••••'}</span></div>
-                        <p className="axr-back-s"><Lock size={14} weight="fill" />Cifrada · {ETQ[fz]}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="axr-chip axr-chip-a"><div className="ax-fc-in ax-glass ax-row" style={{ '--d': '0s' }}><ShieldCheck size={18} weight="fill" />Datos protegidos</div></div>
-                <div className="axr-chip axr-chip-b"><div className="ax-fc-in ax-glass ax-row" style={{ '--d': '-2.4s' }}><CheckCircle size={18} weight="fill" />Perfil al {pct} %</div></div>
-              </div>
             </div>
           </div>
         </section>
@@ -432,7 +350,7 @@ export default function Perfil() {
                       right={ojo(verAct, setVerAct, 'contraseña actual')}
                       note={capsA ? <p className="axr-note axr-fade" role="status"><WarningCircle size={16} weight="fill" aria-hidden="true" />Bloq Mayús está activado.</p> : null} />
                     <Field id={id('nueva')} name="nueva" label="Nueva contraseña" icon={LockKey} type={verNue ? 'text' : 'password'} autoComplete="new-password"
-                      value={pw.nueva} onChange={onPw('nueva')} onFocus={() => setFlip(true)} onBlur={() => { setFlip(false); setCapsN(false); }} onKeyDown={capsCheck(setCapsN)} onKeyUp={capsCheck(setCapsN)} error={errPw.nueva}
+                      value={pw.nueva} onChange={onPw('nueva')} onBlur={() => setCapsN(false)} onKeyDown={capsCheck(setCapsN)} onKeyUp={capsCheck(setCapsN)} error={errPw.nueva}
                       right={ojo(verNue, setVerNue, 'nueva contraseña')}
                       note={capsN ? <p className="axr-note axr-fade" role="status"><WarningCircle size={16} weight="fill" aria-hidden="true" />Bloq Mayús está activado.</p> : null} />
                   </div>

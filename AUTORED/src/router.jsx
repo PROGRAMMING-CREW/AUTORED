@@ -7,6 +7,7 @@ import Inicio from "./Usuario/Inicio.jsx"
 import Sucursales from "./Usuario/Sucursales.jsx"
 import DetalleProducto from "./Usuario/DetalleProducto.jsx";
 import Perfil from "./Usuario/Perfil.jsx";
+import Refacciones from "./Usuario/RegistrarRefaccionaria.jsx";
 
 export const router = createBrowserRouter([
   { path: "/", element: <App /> },
@@ -16,7 +17,8 @@ export const router = createBrowserRouter([
   { path: "/catalogo", element: <Catalogo /> },
   { path: "/sucursales", element: <Sucursales /> },
   { path: "/producto/:id", element: <DetalleProducto/> },
-  { path: "/perfil", element: <Perfil /> } 
+  { path: "/perfil", element: <Perfil /> }, 
+  { path: "/refacciones", element: <Refacciones /> }
 
 
 ]);
