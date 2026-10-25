@@ -1,0 +1,97 @@
+/* ==========================================================================
+   AutoRed · Mi perfil (prefijo axp-)
+   Se apoya en ax- (index.css) y axr- (formulario y credencial de Registro). Aquí solo va lo propio:
+   resumen lateral con anillo de progreso, tarjetas de formulario, estado "sin guardar" y aviso.
+   Los colores salen de las variables de .ax (--ax-ember, --ax-txt-d…): siguen tu paleta.
+   ========================================================================== */
+
+/* ---------- Hero ---------- */
+.axp-hero { min-height: auto; }
+.axp-scene { aspect-ratio: 5 / 4; }
+@media (max-width: 639px) { .axp-scene { aspect-ratio: 1.3; } }
+
+/* ---------- Disposición ---------- */
+.axp-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+@media (min-width: 1024px) {
+  .axp-layout { grid-template-columns: minmax(17rem, 19.5rem) minmax(0, 1fr); gap: 1.75rem; }
+  .axp-aside { position: sticky; top: 5.5rem; }
+}
+.axp-forms { display: grid; gap: 1.25rem; min-width: 0; }
+
+/* ---------- Resumen lateral (oscuro, con anillo) ---------- */
+.axp-sumcard { padding: 1.25rem; border-radius: 1.5rem; color: #fff1f0; background: linear-gradient(165deg, #2a1618, #150b0d 75%); border: 1px solid rgb(255 255 255 / 0.16); box-shadow: 0 30px 60px -34px rgb(0 0 0 / 0.7), 0 20px 50px -40px rgb(239 75 67 / 0.8); }
+.axp-sum-top { display: flex; align-items: center; gap: 1rem; }
+.axp-sum-t { font-family: var(--ax-display); font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; line-height: 1.15; }
+.axp-sum-s { margin-top: 0.25rem; font-size: 0.9rem; color: rgb(255 241 240 / 0.82); }
+.axp-ring { position: relative; display: grid; place-items: center; flex: none; width: 5rem; height: 5rem; }
+.axp-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.axp-ring circle { fill: none; stroke-width: 6; }
+.axp-ring .t { stroke: rgb(255 255 255 / 0.16); }
+.axp-ring .p { stroke: var(--ax-txt-d); stroke-linecap: round; transition: stroke-dashoffset 900ms var(--ax-out), stroke 300ms ease; filter: drop-shadow(0 0 4px rgb(239 75 67 / 0.6)); }
+.axp-ring.is-full .p { stroke: #86efac; filter: drop-shadow(0 0 5px rgb(134 239 172 / 0.55)); }
+.axp-ring .ax-num { position: relative; font-size: 1.6rem; line-height: 1; color: #fff1f0; }
+.axp-ring small { font-size: 0.9rem; opacity: 0.8; }
+.axp-check { display: grid; gap: 0.15rem; margin: 1.1rem 0 0; padding: 0; list-style: none; }
+.axp-check li { animation: axp-rise 420ms var(--ax-out) both; animation-delay: calc(var(--i) * 60ms + 200ms); }
+.axp-it { display: flex; align-items: center; gap: 0.65rem; width: 100%; padding: 0.55rem 0.6rem; border: 0; border-radius: 0.8rem; background: transparent; color: #fff1f0; font: 600 0.95rem var(--ax-body); text-align: left; }
+.axp-it .dot { display: grid; place-items: center; flex: none; width: 1.3rem; height: 1.3rem; border-radius: 50%; border: 1.5px solid rgb(255 241 240 / 0.6); color: transparent; transition: background-color 240ms var(--ax-out), border-color 240ms var(--ax-out), color 240ms var(--ax-out), transform 240ms var(--ax-out); }
+.axp-check .is-ok .dot { background: #86efac; border-color: #86efac; color: #052e16; transform: scale(1.08); }
+.axp-it-btn { cursor: pointer; transition: background-color 160ms ease, transform 140ms var(--ax-out); }
+.axp-it-btn svg:last-child { margin-left: auto; opacity: 0.8; transition: transform 200ms var(--ax-out); }
+.axp-it-btn:active { transform: scale(0.98); }
+@media (hover: hover) and (pointer: fine) { .axp-it-btn:hover { background: rgb(255 255 255 / 0.1); } .axp-it-btn:hover svg:last-child { transform: translateX(3px); } }
+.axp-jump { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; min-height: 2.9rem; margin-top: 1rem; border: 1.5px solid rgb(255 241 240 / 0.5); border-radius: 99px; background: transparent; color: #fff1f0; font: 700 0.95rem var(--ax-body); cursor: pointer; transition: transform 140ms var(--ax-out), background-color 160ms ease; }
+.axp-jump:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { .axp-jump:hover { background: rgb(255 241 240 / 0.14); } }
+@keyframes axp-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Tarjetas de formulario ---------- */
+.axp-card { display: flex; flex-direction: column; gap: 1rem; padding: clamp(1.25rem, 3vw, 1.75rem); border-radius: 1.5rem; background: #fff; border: 1px solid #f1d0ce; box-shadow: 0 18px 40px -28px rgb(155 17 30 / 0.5); scroll-margin-top: 5.5rem; }
+.axp-card-h { display: flex; align-items: center; gap: 0.9rem; }
+.axp-card-s { margin-top: 0.25rem; font-size: 0.95rem; line-height: 1.45; color: var(--ax-ink2); }
+.axp-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 1rem; margin-top: 0.25rem; }
+@media (min-width: 640px) { .axp-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.axp-wide { grid-column: 1 / -1; min-width: 0; }
+.axp-card .axr-field { margin-bottom: 0.9rem; min-width: 0; }
+.axp-hint { margin-top: 0.4rem; font-size: 0.82rem; color: #5a564f; }
+.axp-card :focus-visible { outline-color: var(--ax-ember-d); }
+.axr-ctl input[type="date"] { color-scheme: light; font-family: inherit; }
+.axr-ctl input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.7; cursor: pointer; }
+
+/* destello verde en los campos recién guardados */
+.axr-field.is-saved .axr-ctl input { border-color: #15803d; background: #f1faf4; box-shadow: 0 0 0 4px rgb(21 128 61 / 0.18); }
+.axr-ctl input { transition: border-color 160ms ease, box-shadow 160ms ease, background-color 400ms ease; }
+
+.axp-ok { display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.75rem 0.9rem; border-radius: 0.9rem; background: #e7f6ec; border: 1px solid #a6d9b8; color: #0f4d27; font-size: 0.92rem; font-weight: 600; line-height: 1.45; animation: axr-pop 260ms var(--ax-out) both; }
+.axp-ok svg { flex: none; margin-top: 0.1rem; color: #15803d; }
+
+/* ---------- Acciones del formulario ---------- */
+.axp-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-top: 0.25rem; padding-top: 1rem; border-top: 1px solid #f1d0ce; }
+.axp-dirty { display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 auto 0 0; font-size: 0.9rem; font-weight: 600; color: #5a564f; }
+.axp-dirty i { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: #15803d; transition: background-color 200ms ease; }
+.axp-dirty.on { color: #6b4200; }
+.axp-dirty.on i { background: #a16207; animation: ax-pulse 1.6s ease-in-out infinite; }
+.axp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 2.9rem; padding: 0 1.25rem; border: 1.5px solid var(--ax-rust); border-radius: 99px; background: var(--ax-rust); color: #fff6f5; font-family: var(--ax-display); font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform 140ms var(--ax-out), background-color 160ms ease, color 160ms ease, box-shadow 160ms ease; }
+.axp-btn:active:not(:disabled) { transform: scale(0.97); }
+.axp-btn:disabled { opacity: 0.5; cursor: default; }
+.axp-btn[aria-busy="true"] { opacity: 1; }
+.axp-btn-ghost { background: transparent; color: var(--ax-rust); }
+@media (hover: hover) and (pointer: fine) {
+  .axp-btn:hover:not(:disabled) { background: #7a0f1b; border-color: #7a0f1b; color: #fff6f5; box-shadow: 0 14px 28px -16px rgb(155 17 30 / 0.9); }
+  .axp-btn-ghost:hover:not(:disabled) { background: #ffe0de; color: var(--ax-rust); border-color: var(--ax-rust); box-shadow: none; }
+}
+@media (max-width: 479px) { .axp-actions .axp-btn { flex: 1 1 100%; } }
+
+/* ---------- Aviso ---------- */
+.axp-toast { position: fixed; left: 50%; bottom: 1.25rem; z-index: 1500; display: flex; align-items: center; gap: 0.6rem; max-width: calc(100vw - 2rem); padding: 0.75rem 1.2rem; border-radius: 99px; background: #1c1012; color: #fff1f0; border: 1px solid rgb(255 255 255 / 0.22); box-shadow: 0 24px 50px -20px rgb(0 0 0 / 0.7); font-weight: 600; font-size: 0.95rem; transform: translateX(-50%); animation: axp-toast 340ms var(--ax-out) both; }
+.axp-toast svg { flex: none; color: #86efac; }
+@keyframes axp-toast { from { opacity: 0; transform: translate(-50%, 16px) scale(0.96); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* ---------- Movimiento reducido: sin desplazamientos; los cambios son fundidos ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .axp-check li { animation: none; }
+  .axp-ring .p { transition: stroke-dashoffset 150ms ease; }
+  .axp-dirty.on i { animation: none; }
+  .axp-toast { animation: none; }
+  .axp-ok { animation: none; }
+}
