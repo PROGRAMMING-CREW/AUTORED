@@ -7,14 +7,14 @@ AutoRed es una plataforma web inteligente que centraliza la información de refa
 Desarrollar la plataforma web inteligente AutoRed centralizada y segura, que optimice la administración de inventarios en tiempo real y agilice la localización e interconexión de autopartes entre refaccionarias, distribuidores y compradores.
 
 ## FUNCIONALIDADES 
--[ ] REGISTRO E INICIO DE SESIÓN DE USUARIOS
--[ ] CONSULTA DEL CATÁLOGO DE REFACCIONES
--[ ] REGISTRO DE REFACCIONARIAS
--[ ] ALTA Y GESTIÓN DE PRODUCTOS
--[ ] CONSULTA DE SUCURSALES
--[ ] CONTACTO DIRECTO CON EL DISTRIBUIDOR VÍA WHATSAPP
--[ ] COMPARACIÓN DE PRODUCTOS DE LA MISMA CATEGORÍA
--[ ] CHATBOT CON INTELIGENCIA ARTIFICIAL
+- [ ] REGISTRO E INICIO DE SESIÓN DE USUARIOS
+- [ ] CONSULTA DEL CATÁLOGO DE REFACCIONES
+- [ ] REGISTRO DE REFACCIONARIAS
+- [ ] ALTA Y GESTIÓN DE PRODUCTOS
+- [ ] CONSULTA DE SUCURSALES
+- [ ] CONTACTO DIRECTO CON EL DISTRIBUIDOR VÍA WHATSAPP
+- [ ] COMPARACIÓN DE PRODUCTOS DE LA MISMA CATEGORÍA
+- [ ] CHATBOT CON INTELIGENCIA ARTIFICIAL
 
 ## EQUIPO DE DESARROLLO 
 + CAMACHO ONTIVEROS DIEGO
@@ -35,7 +35,7 @@ Desarrollar la plataforma web inteligente AutoRed centralizada y segura, que opt
 
 ## FECHAS
 
-### INICIO
+#### INICIO
 + 1 de Septiembre de 2026
-### FIN
+#### FIN
 + 27 de Noviembre de 2026
